@@ -1,10 +1,21 @@
-const app = require('./app');
-const dotenv = require('dotenv');
+const dotenv = require("dotenv");
+dotenv.config({ path: "./config.env" });
+const app = require("./app");
+const sequelize = require("./config/db");
 
-dotenv.config({path: './config.env'});
+sequelize
+  .authenticate()
+  .then(() => {
+    console.log(
+      "Conexión exitosa a la base de datos."
+    );
+  })
+  .catch((err) => {
+    console.error("No se pudo conectar:", err);
+  });
 
 const port = process.env.PORT || 3000;
 
 app.listen(port, () => {
-    console.log(`App running on port ${port}...`);
-})
+  console.log(`App running on port ${port}...`);
+});
