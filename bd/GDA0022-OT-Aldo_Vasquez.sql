@@ -28,7 +28,7 @@ create table Usuarios(
 
 create table CategoriaProductos(
 	idCategoriaProductos int identity(1, 1), 
-	nombre varchar(45) not null,
+	nombre varchar(45) unique not null,
 	fecha_creacion datetime not null,
 	constraint PK_CategoriaProductos primary key (idCategoriaProductos)
 );
@@ -252,6 +252,24 @@ end;
 -- <fin usuario>
 
 -- <inicio categorias>
+create or alter proc p_obtenerCategorias
+as
+begin
+	select * from CategoriaProductos;
+end;
+
+create or alter proc p_obtenerCategoriaID
+	@idCategoriaProductos int
+as
+begin
+	if not exists(select 1 from CategoriaProductos where idCategoriaProductos = @idCategoriaProductos)
+	begin
+		throw 50001, 'La categoría no existe.', 1;
+	end
+
+	select * from CategoriaProductos where idCategoriaProductos = @idCategoriaProductos;
+end; 
+
 create or alter proc p_insertarCategoriaProductos
     @usuarios_idUsuarios int,
     @nombre varchar(45),
@@ -259,19 +277,67 @@ create or alter proc p_insertarCategoriaProductos
     @fecha_creacion datetime
 as
 begin
-    begin transaction;
-    begin try
-        insert into CategoriaProductos
-            (Usuarios_idUsuarios, nombre, Estados_idEstados, fecha_creacion)
-        values (@usuarios_idUsuarios, @nombre, @estados_idEstados, @fecha_creacion);
-        commit transaction;
-        print 'Inserción en CategoriaProductos exitosa';
-    end try
-    begin catch
-        print 'Ocurrió un error: ' + error_message();
-        rollback transaction;
-    end catch
+	-- Validando que el usuario existe
+    if not exists (select 1 from Usuarios where idUsuarios = @usuarios_idUsuarios)
+    begin
+        throw 50001, 'El usuario especificado no existe.', 1;
+    end;
+
+    -- Validando que el estado existe
+    if not exists (select 1 from Estados where idEstados = @estados_idEstados)
+    begin
+        throw 50002, 'El estado especificado no existe.', 1;
+    end;
+
+    -- Validando que el nombre de la categoría no exista
+    if exists (select 1 from CategoriaProductos where nombre = @nombre)
+    begin
+        throw 50003, 'El nombre de la categoría ya existe.', 1;
+    end;
+
+    insert into CategoriaProductos
+        (Usuarios_idUsuarios, nombre, Estados_idEstados, fecha_creacion)
+    values 
+        (@usuarios_idUsuarios, @nombre, @estados_idEstados, @fecha_creacion);
+
+    select * from CategoriaProductos where idCategoriaProductos = scope_identity();
 end;
+
+create or alter proc p_actualizarCategoria
+    @idCategoriaProductos int,
+    @nombre varchar(45),
+    @estados_idEstados int
+as
+begin
+    -- Validando que la categoría existe
+    if not exists (select 1 from CategoriaProductos where idCategoriaProductos = @idCategoriaProductos)
+    begin
+        throw 50001, 'La categoría especificada no existe.', 1;
+    end;
+
+    -- Validando que el nombre no exista en otra categoría
+    if exists (select 1 from CategoriaProductos 
+               where nombre = @nombre and idCategoriaProductos != @idCategoriaProductos)
+    begin
+        throw 50002, 'El nombre de la categoría ya existe.', 1;
+    end;
+
+    -- Validando que el estado exista
+    if not exists (select 1 from Estados where idEstados = @estados_idEstados)
+    begin
+        throw 50003, 'El estado especificado no existe.', 1;
+    end;
+
+    update CategoriaProductos
+    set 
+        nombre = @nombre,
+        Estados_idEstados = @estados_idEstados
+    where 
+        idCategoriaProductos = @idCategoriaProductos;
+
+    select * from CategoriaProductos where idCategoriaProductos = @idCategoriaProductos;
+end;
+
 -- <fin categorias>
 
 -- <inicio productos>
