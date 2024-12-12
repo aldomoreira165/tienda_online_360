@@ -89,8 +89,60 @@ const crearProducto = async (req, res) => {
   }
 };
 
+const actualizarProducto = async (req, res) => {
+  const { id } = req.params;
+  const {
+    categoria_id,
+    nombre,
+    marca,
+    codigo,
+    stock,
+    estados_id,
+    precio,
+    foto,
+  } = req.body;
+
+  try {
+    const [results, _] = await sequelize.query(
+      `EXEC p_actualizarProducto 
+      @idProductos = ${parseInt(id, 10)},
+      @categoriaProductos_idCategoriaProductos = ${parseInt(categoria_id, 10)}, 
+      @nombre = '${nombre}', 
+      @marca = '${marca}', 
+      @codigo = '${codigo}', 
+      @stock = ${parseInt(stock, 10)}, 
+      @estados_idEstados = ${parseInt(estados_id, 10)}, 
+      @precio = ${parseFloat(precio)},  
+      @foto = ${foto ? `'${foto}'` : 'NULL'}`
+    );
+
+    res.status(200).json({
+      estado: "exito",
+      data: {
+        id: results[0].idProductos,
+        categoria: results[0].CategoriaProductos_idCategoriaProductos,
+        usuario: results[0].Usuarios_idUsuarios,
+        nombre: results[0].nombre,
+        marca: results[0].marca,
+        codigo: results[0].codigo,
+        stock: results[0].stock,
+        estado: results[0].Estados_idEstados,
+        precio: results[0].precio,
+        fecha_creacion: results[0].fecha_creacion,
+        foto: results[0].foto,
+      },
+    });
+  } catch (error) {
+    res.status(400).json({
+      estado: "error",
+      mensaje: error.message,
+    });
+  }
+};
+
 module.exports = {
   obtenerProductos,
   obtenerProductoId,
   crearProducto,
+  actualizarProducto,
 };

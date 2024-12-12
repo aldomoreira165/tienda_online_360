@@ -1,6 +1,11 @@
 const express = require('express');
 
-const { obtenerProductos, obtenerProductoId, crearProducto } = require('../controllers/productoController');
+const { 
+    obtenerProductos, 
+    obtenerProductoId, 
+    crearProducto, 
+    actualizarProducto 
+} = require('../controllers/productoController');
 
 const router = express.Router();
 
@@ -12,5 +17,6 @@ router
 router
     .route('/:id')
     .get(obtenerProductoId)
+    .put(actualizarProducto)
 
 module.exports = router;
