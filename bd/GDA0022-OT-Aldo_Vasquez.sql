@@ -174,7 +174,7 @@ begin
         end
 
 	insert into Estados (nombre) values (@nombre);
-    select * from Estados where idEstados = scope_identity();;
+    select * from Estados where idEstados = scope_identity();
 
 end;
 
@@ -207,48 +207,35 @@ end;
 -- <fin rol>
 
 -- <inicio cliente>
-create or alter proc p_insertarCliente
-    @razon_social varchar(245),
-    @nombre_comercial varchar(100),
-    @direccion_entrega varchar(45),
-    @telefono varchar(45),
-    @email varchar(45)
-as
-begin
-    begin transaction;
-    begin try
-        insert into Clientes (razon_social, nombre_comercial, direccion_entrega, telefono, email)
-        values (@razon_social, @nombre_comercial, @direccion_entrega, @telefono, @email);
-        commit transaction;
-        print 'Inserción en Clientes exitosa';
-    end try
-    begin catch
-        print 'Ocurrió un error: ' + error_message();
-        rollback transaction;
-    end catch
-end;
+
 -- <fin cliente>
 
 -- <inicio usuario>
-create or alter proc p_insertarUsuario
-    @rol_idRol int,
-    @estados_idEstados int,
-    @correo_electronico varchar(50),
-    @nombre_completo varchar(100),
-    @password varchar(45),
-    @telefono varchar(45),
-    @fecha_nacimiento date,
-    @fecha_creacion datetime,
-    @clientes_idClientes int = null
+create or alter proc p_insertarUsuarioOperador
+	@estados_idEstados int,
+	@correo_electronico varchar(50),
+	@nombre_completo varchar(100),
+	@password varchar(45),
+	@telefono varchar(45),
+	@fecha_nacimiento date, 
+	@fecha_creacion datetime
 as
 begin
-	insert into Usuarios
-		(Rol_idRol, Estados_idEstados, correo_electronico, nombre_completo,
+	if not exists (select 1 from Estados where idEstados = @estados_idEstados)
+	begin
+		throw 50001, 'El estado no existe.', 1;
+	end;
+
+	insert into Usuarios 
+		(Rol_idRol, Estados_idEstados, correo_electronico, nombre_completo, 
 		password, telefono, fecha_nacimiento, fecha_creacion, Clientes_idClientes)
-        values
-		(@rol_idRol, @estados_idEstados, @correo_electronico, @nombre_completo,
-		@password, @telefono, @fecha_nacimiento, @fecha_creacion, @clientes_idClientes);
+	values
+		(2, @estados_idEstados, @correo_electronico, @nombre_completo, @password, @telefono, @fecha_nacimiento, @fecha_creacion, NULL);
+
+	select * from Usuarios where idUsuarios = scope_identity();
 end;
+
+
 -- <fin usuario>
 
 -- <inicio categorias>
