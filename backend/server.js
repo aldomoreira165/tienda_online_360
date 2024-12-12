@@ -1,5 +1,5 @@
 const dotenv = require("dotenv");
-dotenv.config({ path: "./config.env" });
+dotenv.config({ path: "./.env" });
 const app = require("./app");
 const sequelize = require("./config/db");
 
@@ -14,7 +14,7 @@ sequelize
     console.error("No se pudo conectar:", err);
   });
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
 
 app.listen(port, () => {
   console.log(`App running on port ${port}...`);
