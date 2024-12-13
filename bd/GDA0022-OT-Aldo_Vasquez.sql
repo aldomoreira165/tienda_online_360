@@ -235,8 +235,145 @@ begin
 	select * from Usuarios where idUsuarios = scope_identity();
 end;
 
+create or alter proc p_insertarUsuarioCliente
+    @estados_idEstados int,
+    @correo_electronico varchar(50),
+    @nombre_completo varchar(100),
+    @password varchar(45),
+    @telefono varchar(45),
+    @fecha_nacimiento date, 
+    @fecha_creacion datetime,
+    @razon_social varchar(245),
+    @nombre_comercial varchar(100),
+    @direccion_entrega varchar(100)
+as
+begin
+    begin try
+        begin transaction;
 
+        -- Validando si el estado existe
+        if not exists (select 1 from Estados where idEstados = @estados_idEstados)
+        begin
+            throw 50000, 'El estado proporcionado no existe.', 1;
+        end
+
+		-- Insertar en clientes
+        declare @idClientes int;
+        insert into Clientes (razon_social, nombre_comercial, direccion_entrega, telefono, email)
+        values (@razon_social, @nombre_comercial, @direccion_entrega, @telefono, @correo_electronico);
+
+        set @idClientes = scope_identity();
+
+        -- Insertar en Usuarios
+        insert into Usuarios (correo_electronico, nombre_completo, password, telefono, fecha_nacimiento, fecha_creacion, Rol_idRol, Estados_idEstados, Clientes_idClientes)
+        values (@correo_electronico, @nombre_completo, @password, @telefono, @fecha_nacimiento, @fecha_creacion, 1, @estados_idEstados, @idClientes);
+
+        commit transaction;
+
+        select * from Usuarios where idUsuarios = scope_identity();
+    end try
+    begin catch
+        rollback transaction;
+
+        declare @ErrorMessage nvarchar(4000);
+        declare @ErrorSeverity int;
+        declare @ErrorState int;
+
+        select 
+            @ErrorMessage = error_message(), 
+            @ErrorSeverity = error_severity(), 
+            @ErrorState = error_state();
+
+        raiserror (@ErrorMessage, @ErrorSeverity, @ErrorState);
+    end catch
+end;
+
+select * from Usuarios;
+select * from Clientes;
+
+create or alter proc p_actualizarUsuario
+    @idUsuarios int,
+    @cambioCliente bit,
+    @estados_idEstados int,
+    @correo_electronico varchar(50),
+    @nombre_completo varchar(100),
+    @password varchar(45),
+    @telefono varchar(45),
+    @fecha_nacimiento date
+as
+begin
+    begin try
+        begin transaction;
+
+        if not exists (select 1 from Usuarios where idUsuarios = @idUsuarios)
+        begin
+            throw 50001, 'El usuario especificado no existe.', 1;
+        end
+
+		if not exists (select 1 from Estados where idEstados = @estados_idEstados)
+        begin
+            throw 50002, 'El estado proporcionado no existe.', 1;
+        end
+
+        update Usuarios
+        set
+            Estados_idEstados = @estados_idEstados,
+            correo_electronico = @correo_electronico,
+            nombre_completo = @nombre_completo,
+            password = @password,
+            telefono = @telefono,
+            fecha_nacimiento = @fecha_nacimiento
+        where idUsuarios = @idUsuarios;
+
+        -- Actualizando tabla Clientes si @cambioCliente es verdadero
+        if @cambioCliente = 1
+        begin
+            update Clientes
+            set
+                email = @correo_electronico,
+                telefono = @telefono
+            where idClientes = (select Clientes_idClientes from Usuarios where idUsuarios = @idUsuarios);
+        end
+
+        commit transaction;
+		select * from Usuarios where idUsuarios = @idUsuarios;
+    end try
+    begin catch
+        rollback transaction;
+        throw;
+    end catch
+end;
 -- <fin usuario>
+
+-- <inicio cliente>
+create or alter proc p_actualizarCliente
+    @idClientes int,
+    @razon_social varchar(245),
+    @nombre_comercial varchar(100),
+    @direccion_entrega varchar(45),
+    @telefono varchar(45),
+    @correo_electronico varchar(45)
+as
+begin
+    -- Verificar si el cliente existe
+    if not exists (select 1 from Clientes where idClientes = @idClientes)
+	begin
+		throw 50001, 'El cliente especificado no existe.', 1;
+	end;
+
+	 update Clientes
+	 set 
+		razon_social = @razon_social,
+        nombre_comercial = @nombre_comercial,
+		direccion_entrega = @direccion_entrega,
+        telefono = @telefono,
+		email = @correo_electronico
+	where idClientes = @idClientes;
+
+	select * from Clientes where idClientes = @idClientes;
+end;
+
+-- <fin cliente>
 
 -- <inicio categorias>
 create or alter proc p_obtenerCategorias
