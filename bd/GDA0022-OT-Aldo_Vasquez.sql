@@ -597,10 +597,145 @@ end;
 -- <fin productos>
 
 -- <inicio orden>
-create or alter proc p_insertarOrden
-    @usuarios_idUsuarios int,
-    @estados_idEstados int,
-    @fecha_creacion datetime,
+create or alter proc p_insertarOrdenConDetalle
+    @Usuarios_idUsuarios int,
+    @Estados_idEstados int,
+    @fechaCreacion datetime,
+    @nombre_completo varchar(100),
+    @direccion varchar(545),
+    @telefono varchar(45),
+    @correo_electronico varchar(50),
+    @fecha_entrega date,
+    @total_orden float,
+    @detalles nvarchar(max)
+as
+begin
+    begin try
+        begin transaction
+
+        -- Validando que el usuario existe
+        if not exists (select 1 from Usuarios where idUsuarios = @Usuarios_idUsuarios)
+        begin
+            throw 50001, 'El usuario especificado no existe.', 1;
+        end
+
+        -- Validando que el estado existe
+        if not exists (select 1 from Estados where idEstados = @Estados_idEstados)
+        begin
+            throw 50002, 'El estado especificado no existe.', 1;
+        end
+
+        insert into Orden (
+            Usuarios_idUsuarios, 
+            Estados_idEstados, 
+            fecha_creacion, 
+            nombre_completo, 
+            direccion, 
+            telefono, 
+            correo_electronico, 
+            fecha_entrega, 
+            total_orden
+        )
+        values (
+            @Usuarios_idUsuarios, 
+            @Estados_idEstados, 
+            @fechaCreacion, 
+            @nombre_completo, 
+            @direccion, 
+            @telefono, 
+            @correo_electronico, 
+            @fecha_entrega, 
+            @total_orden
+        );
+
+        declare @idOrden int = scope_identity();
+
+        -- Insertando los detalles de la orden
+        insert into OrdenDetalles (
+            Orden_idOrden, 
+            Productos_idProductos, 
+            cantidad, 
+            precio, 
+            subtotal
+        )
+        select
+            @idOrden,
+            Detalles.Productos_idProductos,
+            Detalles.cantidad,
+            p.precio,
+            p.precio * Detalles.cantidad as subtotal
+        from
+            openjson(@detalles)
+            with (
+                Productos_idProductos int '$.Productos_idProductos',
+                cantidad int '$.cantidad'
+            ) as Detalles
+        inner join Productos p on Detalles.Productos_idProductos = p.idProductos;
+
+        -- Verificación de existencia de productos en la tabla Productos
+        if exists (
+            select 1
+            from OrdenDetalles od
+            left join Productos p on od.Productos_idProductos = p.idProductos
+            where od.Orden_idOrden = @idOrden and p.idProductos is null
+        )
+        begin
+            throw 50003, 'Uno o más productos en los detalles no existen.', 1;
+        end
+
+		select * from Orden where idOrden = @idOrden;
+
+        commit transaction;
+    end try
+    begin catch
+        rollback transaction;
+        throw;
+    end catch
+end;
+
+create or alter proc p_obtenerOrdenes
+as
+begin
+	select 
+    o.idOrden,
+    o.Usuarios_idUsuarios,
+    o.Estados_idEstados,
+    o.fecha_creacion,
+    d.Productos_idProductos,
+    d.cantidad,
+    d.subtotal
+	from 
+		Orden o
+	inner join 
+		OrdenDetalles d on o.idOrden = d.Orden_idOrden
+	order by 
+		o.fecha_creacion desc;
+end;
+
+create or alter proc p_obtenerOrdenID
+	@idOrden int
+as
+begin
+	select 
+    o.idOrden,
+    o.Usuarios_idUsuarios,
+    o.Estados_idEstados,
+    o.fecha_creacion,
+    d.Productos_idProductos,
+    d.cantidad,
+    d.subtotal
+	from 
+		Orden o
+	inner join 
+		OrdenDetalles d on o.idOrden = d.Orden_idOrden
+	where o.idOrden = @idOrden
+	order by 
+		o.fecha_creacion desc;
+end;
+
+create or alter proc p_actualizarOrden
+	@idOrden int,
+    @Estados_idEstados int,
     @nombre_completo varchar(100),
     @direccion varchar(545),
     @telefono varchar(45),
@@ -609,49 +744,28 @@ create or alter proc p_insertarOrden
     @total_orden float
 as
 begin
-    begin transaction;
-    begin try
-        insert into Orden
-            (Usuarios_idUsuarios, Estados_idEstados, fecha_creacion, nombre_completo,
-            direccion, telefono, correo_electronico, fecha_entrega, total_orden)
-        values
-            (@usuarios_idUsuarios, @estados_idEstados, @fecha_creacion,
-            @nombre_completo, @direccion, @telefono, @correo_electronico,
-            @fecha_entrega, @total_orden);
-        commit transaction;
-        print 'Inserción en Orden exitosa';
-    end try
-    begin catch
-        print 'Ocurrió un error: ' + error_message();
-        rollback transaction;
-    end catch
-end;
--- <fin orden>
+	if not exists (select 1 from Estados where idEstados = @Estados_idEstados)
+        begin
+            throw 50001, 'El estado especificado no existe.', 1;
+        end
 
--- <inicio orden detalle>
-create or alter proc p_insertarOrdenDetalles
-    @orden_idOrden int,
-    @productos_idProductos int,
-    @cantidad int,
-    @precio float,
-    @subtotal float
-as
-begin
-    begin transaction;
-    begin try
-        insert into OrdenDetalles
-            (Orden_idOrden, Productos_idProductos, cantidad, precio, subtotal)
-        values
-            (@orden_idOrden, @productos_idProductos, @cantidad, @precio, @subtotal);
-        commit transaction;
-        print 'Inserción en OrdenDetalles exitosa';
-    end try
-    begin catch
-        print 'Ocurrió un error: ' + error_message();
-        rollback transaction;
-    end catch
+	update Orden
+		set 
+			Estados_idEstados = @Estados_idEstados,
+			nombre_completo = @nombre_completo,
+			direccion = @direccion,
+			telefono = @telefono,
+			correo_electronico = @correo_electronico,
+			fecha_entrega = @fecha_entrega,
+			total_orden = @total_orden
+		where idOrden = @idOrden;
+
+	select * from Orden where idOrden = @idOrden;
 end;
--- <fin orden detalle>
+
+select * from Orden;
+
+-- <fin orden>
 
 -- creacion de vistas
 

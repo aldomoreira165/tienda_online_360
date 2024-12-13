@@ -6,6 +6,7 @@ const estadoRouter = require('./routes/estadoRoutes');
 const categoriaRouter = require('./routes/categoriaRoutes');
 const usuarioRouter = require('./routes/usuarioRoutes');
 const clienteRouter = require('./routes/clienteRoutes');
+const ordenRouter = require('./routes/ordenRoutes');
 
 const app = express();
 
@@ -18,5 +19,6 @@ app.use('/api/v1/estados', estadoRouter)
 app.use('/api/v1/categorias', categoriaRouter)
 app.use('/api/v1/usuarios', usuarioRouter)
 app.use('/api/v1/clientes', clienteRouter)
+app.use('/api/v1/ordenes', ordenRouter)
 
 module.exports = app;
