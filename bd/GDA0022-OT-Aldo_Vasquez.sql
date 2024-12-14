@@ -17,9 +17,9 @@ create table Productos(
 
 create table Usuarios(
 	idUsuarios int identity(1, 1),
-	correo_electronico varchar(50) not null,
+	correo_electronico varchar(50) unique not null,
 	nombre_completo varchar(100) not null,
-	password varchar(45) not null,
+	password varchar(100) not null,
 	telefono varchar(45),
 	fecha_nacimiento date not null,
 	fecha_creacion datetime not null,
@@ -28,14 +28,14 @@ create table Usuarios(
 
 create table CategoriaProductos(
 	idCategoriaProductos int identity(1, 1), 
-	nombre varchar(45) not null,
+	nombre varchar(45) unique not null,
 	fecha_creacion datetime not null,
 	constraint PK_CategoriaProductos primary key (idCategoriaProductos)
 );
 
 create table Estados(
 	idEstados int identity(1, 1), 
-	nombre varchar(45) not null,
+	nombre varchar(45) unique not null,
 	constraint PK_Estados primary key (idEstados)
 );
 
@@ -163,87 +163,250 @@ INSERT INTO OrdenDetalles (cantidad, precio, subtotal, Orden_idOrden, Productos_
 (10, 5.00, 50.00, 3, 3);
 
 -- creacion de store procedures
+-- <inicio estados>
 create or alter proc p_insertarEstado
     @nombre varchar(45)
 as
 begin
-    begin transaction;
-    begin try
-        insert into Estados (nombre) values (@nombre);
-        commit transaction;
-        print 'Inserción en Estados exitosa';
-    end try
-    begin catch
-        print 'Ocurrió un error: ' + error_message();
-        rollback transaction;
-    end catch
+	if exists (select 1 from Estados where nombre = @nombre)
+		begin
+			throw 50001, 'El estado ya existe.', 1;
+        end
+
+	insert into Estados (nombre) values (@nombre);
+    select * from Estados where idEstados = scope_identity();
+
 end;
 
+create or alter proc p_obtenerEstados
+as
+begin
+	select * from Estados;
+end;
+
+create or alter proc p_obtenerEstadoID
+	@idEstados int
+as
+begin
+	if not exists(select 1 from Estados where idEstados = @idEstados)
+	begin
+		throw 50001, 'El estado no existe.', 1;
+	end
+
+	select * from Estados where idEstados = @idEstados;
+end;
+-- <fin estados>
+
+-- <inicio rol>
 create or alter proc p_insertarRol
     @nombre varchar(45)
 as
 begin
-    begin transaction;
+	insert into Rol (nombre) values (@nombre);
+end;
+-- <fin rol>
+
+-- <inicio cliente>
+
+-- <fin cliente>
+
+-- <inicio usuario>
+create or alter proc p_obtenerUsuarioEmail
+	@correo_electronico varchar(50)
+as
+begin
+	select * from Usuarios where correo_electronico = @correo_electronico;
+end;
+
+create or alter proc p_insertarUsuarioOperador
+	@estados_idEstados int,
+	@correo_electronico varchar(50),
+	@nombre_completo varchar(100),
+	@password varchar(100),
+	@telefono varchar(45),
+	@fecha_nacimiento date, 
+	@fecha_creacion datetime
+as
+begin
+	if not exists (select 1 from Estados where idEstados = @estados_idEstados)
+	begin
+		throw 50001, 'El estado no existe.', 1;
+	end;
+
+	if exists (select 1 from Usuarios where correo_electronico = @correo_electronico)
+	begin	
+		throw 50002, 'El correo electronico ya se encuentra asociado a otro usuario', 1;
+	end;
+
+	insert into Usuarios 
+		(Rol_idRol, Estados_idEstados, correo_electronico, nombre_completo, 
+		password, telefono, fecha_nacimiento, fecha_creacion, Clientes_idClientes)
+	values
+		(2, @estados_idEstados, @correo_electronico, @nombre_completo, @password, @telefono, @fecha_nacimiento, @fecha_creacion, NULL);
+
+	select * from Usuarios where idUsuarios = scope_identity();
+end;
+
+create or alter proc p_insertarUsuarioCliente
+    @estados_idEstados int,
+    @correo_electronico varchar(50),
+    @nombre_completo varchar(100),
+    @password varchar(100),
+    @telefono varchar(45),
+    @fecha_nacimiento date, 
+    @fecha_creacion datetime,
+    @razon_social varchar(245),
+    @nombre_comercial varchar(100),
+    @direccion_entrega varchar(100)
+as
+begin
     begin try
-        insert into Rol (nombre) values (@nombre);
+        begin transaction;
+
+        -- Validando si el estado existe
+        if not exists (select 1 from Estados where idEstados = @estados_idEstados)
+        begin
+            throw 50000, 'El estado proporcionado no existe.', 1;
+        end
+
+		if exists (select 1 from Usuarios where correo_electronico = @correo_electronico)
+		begin	
+			throw 50001, 'El correo electronico ya se encuentra asociado a otro usuario', 1;
+		end;
+
+		-- Insertar en clientes
+        declare @idClientes int;
+        insert into Clientes (razon_social, nombre_comercial, direccion_entrega, telefono, email)
+        values (@razon_social, @nombre_comercial, @direccion_entrega, @telefono, @correo_electronico);
+
+        set @idClientes = scope_identity();
+
+        -- Insertar en Usuarios
+        insert into Usuarios (correo_electronico, nombre_completo, password, telefono, fecha_nacimiento, fecha_creacion, Rol_idRol, Estados_idEstados, Clientes_idClientes)
+        values (@correo_electronico, @nombre_completo, @password, @telefono, @fecha_nacimiento, @fecha_creacion, 1, @estados_idEstados, @idClientes);
+
         commit transaction;
-        print 'Inserción en Rol exitosa';
+
+        select * from Usuarios where idUsuarios = scope_identity();
     end try
     begin catch
-        print 'Ocurrió un error: ' + error_message();
         rollback transaction;
+
+        declare @ErrorMessage nvarchar(4000);
+        declare @ErrorSeverity int;
+        declare @ErrorState int;
+
+        select 
+            @ErrorMessage = error_message(), 
+            @ErrorSeverity = error_severity(), 
+            @ErrorState = error_state();
+
+        raiserror (@ErrorMessage, @ErrorSeverity, @ErrorState);
     end catch
 end;
 
-create or alter proc p_insertarCliente
+create or alter proc p_actualizarUsuario
+    @idUsuarios int,
+    @cambioCliente bit,
+    @estados_idEstados int,
+    @correo_electronico varchar(50),
+    @nombre_completo varchar(100),
+    @password varchar(100),
+    @telefono varchar(45),
+    @fecha_nacimiento date
+as
+begin
+    begin try
+        begin transaction;
+
+        if not exists (select 1 from Usuarios where idUsuarios = @idUsuarios)
+        begin
+            throw 50001, 'El usuario especificado no existe.', 1;
+        end
+
+		if not exists (select 1 from Estados where idEstados = @estados_idEstados)
+        begin
+            throw 50002, 'El estado proporcionado no existe.', 1;
+        end
+
+        update Usuarios
+        set
+            Estados_idEstados = @estados_idEstados,
+            correo_electronico = @correo_electronico,
+            nombre_completo = @nombre_completo,
+            password = @password,
+            telefono = @telefono,
+            fecha_nacimiento = @fecha_nacimiento
+        where idUsuarios = @idUsuarios;
+
+        -- Actualizando tabla Clientes si @cambioCliente es verdadero
+        if @cambioCliente = 1
+        begin
+            update Clientes
+            set
+                email = @correo_electronico,
+                telefono = @telefono
+            where idClientes = (select Clientes_idClientes from Usuarios where idUsuarios = @idUsuarios);
+        end
+
+        commit transaction;
+		select * from Usuarios where idUsuarios = @idUsuarios;
+    end try
+    begin catch
+        rollback transaction;
+        throw;
+    end catch
+end;
+-- <fin usuario>
+
+-- <inicio cliente>
+create or alter proc p_actualizarCliente
+    @idClientes int,
     @razon_social varchar(245),
     @nombre_comercial varchar(100),
     @direccion_entrega varchar(45),
     @telefono varchar(45),
-    @email varchar(45)
+    @correo_electronico varchar(45)
 as
 begin
-    begin transaction;
-    begin try
-        insert into Clientes (razon_social, nombre_comercial, direccion_entrega, telefono, email)
-        values (@razon_social, @nombre_comercial, @direccion_entrega, @telefono, @email);
-        commit transaction;
-        print 'Inserción en Clientes exitosa';
-    end try
-    begin catch
-        print 'Ocurrió un error: ' + error_message();
-        rollback transaction;
-    end catch
+    -- Verificar si el cliente existe
+    if not exists (select 1 from Clientes where idClientes = @idClientes)
+	begin
+		throw 50001, 'El cliente especificado no existe.', 1;
+	end;
+
+	 update Clientes
+	 set 
+		razon_social = @razon_social,
+        nombre_comercial = @nombre_comercial,
+		direccion_entrega = @direccion_entrega,
+        telefono = @telefono,
+		email = @correo_electronico
+	where idClientes = @idClientes;
+
+	select * from Clientes where idClientes = @idClientes;
 end;
 
-create or alter proc p_insertarUsuario
-    @rol_idRol int,
-    @estados_idEstados int,
-    @correo_electronico varchar(50),
-    @nombre_completo varchar(100),
-    @password varchar(45),
-    @telefono varchar(45),
-    @fecha_nacimiento date,
-    @fecha_creacion datetime,
-    @clientes_idClientes int = null
+-- <fin cliente>
+
+-- <inicio categorias>
+create or alter proc p_obtenerCategorias
 as
 begin
-    begin transaction;
-    begin try
-        insert into Usuarios
-            (Rol_idRol, Estados_idEstados, correo_electronico, nombre_completo,
-            password, telefono, fecha_nacimiento, fecha_creacion, Clientes_idClientes)
-        values
-            (@rol_idRol, @estados_idEstados, @correo_electronico, @nombre_completo,
-            @password, @telefono, @fecha_nacimiento, @fecha_creacion, @clientes_idClientes);
-        commit transaction;
-        print 'Inserción en Usuarios exitosa';
-    end try
-    begin catch
-        print 'Ocurrió un error: ' + error_message();
-        rollback transaction;
-    end catch
+	select * from CategoriaProductos;
 end;
+
+create or alter proc p_obtenerCategoriaID
+	@idCategoriaProductos int
+as
+begin
+	if not exists(select 1 from CategoriaProductos where idCategoriaProductos = @idCategoriaProductos)
+	begin
+		throw 50001, 'La categoría no existe.', 1;
+	end
+
+	select * from CategoriaProductos where idCategoriaProductos = @idCategoriaProductos;
+end; 
 
 create or alter proc p_insertarCategoriaProductos
     @usuarios_idUsuarios int,
@@ -252,19 +415,87 @@ create or alter proc p_insertarCategoriaProductos
     @fecha_creacion datetime
 as
 begin
-    begin transaction;
-    begin try
-        insert into CategoriaProductos
-            (Usuarios_idUsuarios, nombre, Estados_idEstados, fecha_creacion)
-        values (@usuarios_idUsuarios, @nombre, @estados_idEstados, @fecha_creacion);
-        commit transaction;
-        print 'Inserción en CategoriaProductos exitosa';
-    end try
-    begin catch
-        print 'Ocurrió un error: ' + error_message();
-        rollback transaction;
-    end catch
+	-- Validando que el usuario existe
+    if not exists (select 1 from Usuarios where idUsuarios = @usuarios_idUsuarios)
+    begin
+        throw 50001, 'El usuario especificado no existe.', 1;
+    end;
+
+    -- Validando que el estado existe
+    if not exists (select 1 from Estados where idEstados = @estados_idEstados)
+    begin
+        throw 50002, 'El estado especificado no existe.', 1;
+    end;
+
+    -- Validando que el nombre de la categoría no exista
+    if exists (select 1 from CategoriaProductos where nombre = @nombre)
+    begin
+        throw 50003, 'El nombre de la categoría ya existe.', 1;
+    end;
+
+    insert into CategoriaProductos
+        (Usuarios_idUsuarios, nombre, Estados_idEstados, fecha_creacion)
+    values 
+        (@usuarios_idUsuarios, @nombre, @estados_idEstados, @fecha_creacion);
+
+    select * from CategoriaProductos where idCategoriaProductos = scope_identity();
 end;
+
+create or alter proc p_actualizarCategoria
+    @idCategoriaProductos int,
+    @nombre varchar(45),
+    @estados_idEstados int
+as
+begin
+    -- Validando que la categoría existe
+    if not exists (select 1 from CategoriaProductos where idCategoriaProductos = @idCategoriaProductos)
+    begin
+        throw 50001, 'La categoría especificada no existe.', 1;
+    end;
+
+    -- Validando que el nombre no exista en otra categoría
+    if exists (select 1 from CategoriaProductos 
+               where nombre = @nombre and idCategoriaProductos != @idCategoriaProductos)
+    begin
+        throw 50002, 'El nombre de la categoría ya existe.', 1;
+    end;
+
+    -- Validando que el estado exista
+    if not exists (select 1 from Estados where idEstados = @estados_idEstados)
+    begin
+        throw 50003, 'El estado especificado no existe.', 1;
+    end;
+
+    update CategoriaProductos
+    set 
+        nombre = @nombre,
+        Estados_idEstados = @estados_idEstados
+    where 
+        idCategoriaProductos = @idCategoriaProductos;
+
+    select * from CategoriaProductos where idCategoriaProductos = @idCategoriaProductos;
+end;
+
+-- <fin categorias>
+
+-- <inicio productos>
+create or alter proc p_obtenerProductos
+as
+begin
+	select * from Productos;
+end;
+
+create or alter proc p_obtenerProductoID
+	@idProductos int
+as
+begin
+	if not exists(select 1 from Productos where idProductos = @idProductos)
+	begin
+		throw 50001, 'El producto no existe.', 1;
+	end
+
+	select * from Productos where idProductos = @idProductos;
+end; 
 
 create or alter proc p_insertarProductos
     @categoriaProductos_idCategoriaProductos int,
@@ -272,34 +503,253 @@ create or alter proc p_insertarProductos
     @nombre varchar(45),
     @marca varchar(45),
     @codigo varchar(45),
-    @stock float,
+    @stock int,
     @estados_idEstados int,
     @precio float,
     @fecha_creacion datetime,
     @foto binary = null
 as
 begin
-    begin transaction;
+	-- Validar que la categoría exista
+	if not exists (select 1 from CategoriaProductos where idCategoriaProductos = @categoriaProductos_idCategoriaProductos)
+		begin
+			throw 50001, 'La categoría especificada no existe.', 1;
+		end
+
+	-- Validar que el usuario exista
+	if not exists (select 1 from Usuarios where idUsuarios = @usuarios_idUsuarios)
+		begin
+			throw 50002, 'El usuario especificado no existe.', 1;
+		end
+
+	-- Validar que el estado exista
+	if not exists (select 1 from Estados where idEstados = @estados_idEstados)
+		begin
+			throw 50003, 'El estado especificado no existe.', 1;
+		end
+
+	-- Validar que el stock sea positivo
+	if @stock <= 0
+		begin
+			throw 50004, 'El stock debe ser un valor positivo.', 1;
+		end
+
+	-- Validar que el precio sea positivo
+	if @precio <= 0
+		begin
+			throw 50005, 'El precio debe ser un valor positivo.', 1;
+		end
+
+	insert into Productos
+	(CategoriaProductos_idCategoriaProductos, Usuarios_idUsuarios, nombre,
+	marca, codigo, stock, Estados_idEstados, precio, fecha_creacion, foto)
+	values
+	(@categoriaProductos_idCategoriaProductos, @usuarios_idUsuarios, @nombre,
+	@marca, @codigo, @stock, @estados_idEstados, @precio, @fecha_creacion, @foto);
+
+	select * from Productos where idProductos = scope_identity();
+end;
+
+create or alter proc p_actualizarProducto
+	@idProductos int,
+	@categoriaProductos_idCategoriaProductos int,
+	@nombre varchar(45),
+    @marca varchar(45),
+    @codigo varchar(45),
+    @stock int,
+    @estados_idEstados int,
+    @precio float,
+	@foto binary = null
+as
+begin
+	-- Validando que el producto existe
+    if not exists (select 1 from Productos where idProductos = @idProductos)
+    begin
+        throw 50001, 'El producto especificada no existe.', 1;
+    end;
+
+    -- Validando que la categoría existe
+    if not exists (select 1 from CategoriaProductos where idCategoriaProductos = @categoriaProductos_idCategoriaProductos)
+    begin
+		throw 50002, 'La categoría especificada no existe.', 1;
+    end;
+
+    -- Validando que el estado existe
+    if not exists (select 1 from Estados where idEstados = @estados_idEstados)
+    begin
+		throw 50003, 'El estado especificado no existe.', 1;
+    end;
+
+    -- Validando que el stock no sea negativo
+    if @stock < 0
+    begin
+		throw 50004, 'El stock no puede ser un valor negativo.', 1;
+    end;
+
+    -- Validando que el precio no sea negativo
+    if @precio < 0
+    begin
+		throw 50004, 'El precio no puede ser un valor negativo.', 1;
+    end;
+
+	update Productos
+    set 
+        CategoriaProductos_idCategoriaProductos = @categoriaProductos_idCategoriaProductos,
+        nombre = @nombre,
+        marca = @marca,
+        codigo = @codigo,
+        stock = @stock,
+        Estados_idEstados = @estados_idEstados,
+        precio = @precio,
+        foto = @foto
+    where 
+		idProductos = @idProductos;
+
+	-- Retornando el producto actualizado
+	select * from Productos where idProductos = @idProductos;
+end;
+-- <fin productos>
+
+-- <inicio orden>
+create or alter proc p_insertarOrdenConDetalle
+    @Usuarios_idUsuarios int,
+    @Estados_idEstados int,
+    @fechaCreacion datetime,
+    @nombre_completo varchar(100),
+    @direccion varchar(545),
+    @telefono varchar(45),
+    @correo_electronico varchar(50),
+    @fecha_entrega date,
+    @total_orden float,
+    @detalles nvarchar(max)
+as
+begin
     begin try
-        insert into Productos
-            (CategoriaProductos_idCategoriaProductos, Usuarios_idUsuarios, nombre,
-            marca, codigo, stock, Estados_idEstados, precio, fecha_creacion, foto)
-        values
-            (@categoriaProductos_idCategoriaProductos, @usuarios_idUsuarios, @nombre,
-            @marca, @codigo, @stock, @estados_idEstados, @precio, @fecha_creacion, @foto);
+        begin transaction
+
+        -- Validando que el usuario existe
+        if not exists (select 1 from Usuarios where idUsuarios = @Usuarios_idUsuarios)
+        begin
+            throw 50001, 'El usuario especificado no existe.', 1;
+        end
+
+        -- Validando que el estado existe
+        if not exists (select 1 from Estados where idEstados = @Estados_idEstados)
+        begin
+            throw 50002, 'El estado especificado no existe.', 1;
+        end
+
+        insert into Orden (
+            Usuarios_idUsuarios, 
+            Estados_idEstados, 
+            fecha_creacion, 
+            nombre_completo, 
+            direccion, 
+            telefono, 
+            correo_electronico, 
+            fecha_entrega, 
+            total_orden
+        )
+        values (
+            @Usuarios_idUsuarios, 
+            @Estados_idEstados, 
+            @fechaCreacion, 
+            @nombre_completo, 
+            @direccion, 
+            @telefono, 
+            @correo_electronico, 
+            @fecha_entrega, 
+            @total_orden
+        );
+
+        declare @idOrden int = scope_identity();
+
+        -- Insertando los detalles de la orden
+        insert into OrdenDetalles (
+            Orden_idOrden, 
+            Productos_idProductos, 
+            cantidad, 
+            precio, 
+            subtotal
+        )
+        select
+            @idOrden,
+            Detalles.Productos_idProductos,
+            Detalles.cantidad,
+            p.precio,
+            p.precio * Detalles.cantidad as subtotal
+        from
+            openjson(@detalles)
+            with (
+                Productos_idProductos int '$.Productos_idProductos',
+                cantidad int '$.cantidad'
+            ) as Detalles
+        inner join Productos p on Detalles.Productos_idProductos = p.idProductos;
+
+        -- Verificación de existencia de productos en la tabla Productos
+        if exists (
+            select 1
+            from OrdenDetalles od
+            left join Productos p on od.Productos_idProductos = p.idProductos
+            where od.Orden_idOrden = @idOrden and p.idProductos is null
+        )
+        begin
+            throw 50003, 'Uno o más productos en los detalles no existen.', 1;
+        end
+
+		select * from Orden where idOrden = @idOrden;
+
         commit transaction;
-        print 'Inserción en Productos exitosa';
     end try
     begin catch
-        print 'Ocurrió un error: ' + error_message();
         rollback transaction;
+        throw;
     end catch
 end;
 
-create or alter proc p_insertarOrden
-    @usuarios_idUsuarios int,
-    @estados_idEstados int,
-    @fecha_creacion datetime,
+create or alter proc p_obtenerOrdenes
+as
+begin
+	select 
+    o.idOrden,
+    o.Usuarios_idUsuarios,
+    o.Estados_idEstados,
+    o.fecha_creacion,
+    d.Productos_idProductos,
+    d.cantidad,
+    d.subtotal
+	from 
+		Orden o
+	inner join 
+		OrdenDetalles d on o.idOrden = d.Orden_idOrden
+	order by 
+		o.fecha_creacion desc;
+end;
+
+create or alter proc p_obtenerOrdenID
+	@idOrden int
+as
+begin
+	select 
+    o.idOrden,
+    o.Usuarios_idUsuarios,
+    o.Estados_idEstados,
+    o.fecha_creacion,
+    d.Productos_idProductos,
+    d.cantidad,
+    d.subtotal
+	from 
+		Orden o
+	inner join 
+		OrdenDetalles d on o.idOrden = d.Orden_idOrden
+	where o.idOrden = @idOrden
+	order by 
+		o.fecha_creacion desc;
+end;
+
+create or alter proc p_actualizarOrden
+	@idOrden int,
+    @Estados_idEstados int,
     @nombre_completo varchar(100),
     @direccion varchar(545),
     @telefono varchar(45),
@@ -308,743 +758,28 @@ create or alter proc p_insertarOrden
     @total_orden float
 as
 begin
-    begin transaction;
-    begin try
-        insert into Orden
-            (Usuarios_idUsuarios, Estados_idEstados, fecha_creacion, nombre_completo,
-            direccion, telefono, correo_electronico, fecha_entrega, total_orden)
-        values
-            (@usuarios_idUsuarios, @estados_idEstados, @fecha_creacion,
-            @nombre_completo, @direccion, @telefono, @correo_electronico,
-            @fecha_entrega, @total_orden);
-        commit transaction;
-        print 'Inserción en Orden exitosa';
-    end try
-    begin catch
-        print 'Ocurrió un error: ' + error_message();
-        rollback transaction;
-    end catch
-end;
+	if not exists (select 1 from Estados where idEstados = @Estados_idEstados)
+        begin
+            throw 50001, 'El estado especificado no existe.', 1;
+        end
 
-create or alter proc p_insertarOrdenDetalles
-    @orden_idOrden int,
-    @productos_idProductos int,
-    @cantidad int,
-    @precio float,
-    @subtotal float
-as
-begin
-    begin transaction;
-    begin try
-        insert into OrdenDetalles
-            (Orden_idOrden, Productos_idProductos, cantidad, precio, subtotal)
-        values
-            (@orden_idOrden, @productos_idProductos, @cantidad, @precio, @subtotal);
-        commit transaction;
-        print 'Inserción en OrdenDetalles exitosa';
-    end try
-    begin catch
-        print 'Ocurrió un error: ' + error_message();
-        rollback transaction;
-    end catch
-end;
-
-create or alter proc p_actualizarCategoriaProducto
-	@idProducto int,
-	@CategoriaProducto_idCategoriaProducto int
-as
-begin
-	begin transaction; 
-	begin try
-		update Productos
-		set CategoriaProductos_idCategoriaProductos = @CategoriaProducto_idCategoriaProducto
-		where idProductos = @idProducto;
-		commit transaction;
-		print 'Actualizacion exitosa';
-	end try
-	begin catch
-		print 'Ocurrio un error: ' + error_message();
-		rollback transaction;
-	end catch
-end;
-
-create or alter proc p_actualizarNombreProducto
-	@idProducto int,
-	@nombre varchar(45)
-as
-begin
-	begin transaction; 
-	begin try
-		if @nombre = '' or @nombre is null
-		begin
-			throw 50000, 'El nombre no puede estar vacío', 1;
-		end
-		
-		update Productos
-		set nombre = @nombre
-		where idProductos = @idProducto;
-
-		commit transaction;
-		print 'Actualización exitosa';
-	end try
-	begin catch
-		print 'Ocurrió un error: ' + error_message();
-		rollback transaction;
-	end catch
-end;
-
-create or alter proc p_actualizarMarcaProducto
-	@idProducto int,
-	@marca varchar(45)
-as
-begin
-	begin transaction; 
-	begin try
-		if @marca = '' or @marca is null
-		begin
-			throw 50000, 'La marca no puede estar vacía', 1;
-		end
-		
-		update Productos
-		set marca = @marca
-		where idProductos = @idProducto;
-
-		commit transaction;
-		print 'Actualización exitosa';
-	end try
-	begin catch
-		print 'Ocurrió un error: ' + error_message();
-		rollback transaction;
-	end catch
-end;
-
-create or alter proc p_actualizarCodigoProducto
-	@idProducto int,
-	@codigo varchar(45)
-as
-begin
-	begin transaction; 
-	begin try
-		if @codigo = '' or @codigo is null
-		begin
-			throw 50000, 'El código no puede estar vacío', 1;
-		end
-		
-		update Productos
-		set codigo = @codigo
-		where idProductos = @idProducto;
-
-		commit transaction;
-		print 'Actualización exitosa';
-	end try
-	begin catch
-		print 'Ocurrió un error: ' + error_message();
-		rollback transaction;
-	end catch
-end;
-
-create or alter proc p_actualizarStockProducto
-	@idProducto int,
-	@stock int
-as
-begin
-	begin transaction; 
-	begin try
-		if @stock < 0
-		begin
-			throw 50000, 'El stock no puede ser negativo', 1;
-		end
-		
-		update Productos
-		set stock = @stock
-		where idProductos = @idProducto;
-
-		commit transaction;
-		print 'Actualización exitosa';
-	end try
-	begin catch
-		print 'Ocurrió un error: ' + error_message();
-		rollback transaction;
-	end catch
-end;
-
-create or alter proc p_actualizarEstadoProducto
-	@idProducto int,
-	@estado int
-as
-begin
-	begin transaction; 
-	begin try
-		update Productos
-		set Estados_idEstados = @estado
-		where idProductos = @idProducto;
-		commit transaction;
-		print 'Actualización exitosa';
-	end try
-	begin catch
-		print 'Ocurrió un error: ' + error_message();
-		rollback transaction;
-	end catch
-end;
-
-create or alter proc p_actualizarPrecioProducto
-	@idProducto int,
-	@precio float
-as
-begin
-	begin transaction; 
-	begin try
-		if @precio <= 0
-		begin
-			throw 50000, 'El precio debe ser mayor que cero', 1;
-		end
-		
-		update Productos
-		set precio = @precio
-		where idProductos = @idProducto;
-
-		commit transaction;
-		print 'Actualización exitosa';
-	end try
-	begin catch
-		print 'Ocurrió un error: ' + error_message();
-		rollback transaction;
-	end catch
-end;
-
-create or alter proc p_actualizarFotoProducto
-	@idProducto int,
-	@foto binary
-as
-begin
-	begin transaction; 
-	begin try
-		if @foto is null
-		begin
-			throw 50000, 'La foto no puede estar vacía', 1;
-		end
-		
-		update Productos
-		set foto = @foto
-		where idProductos = @idProducto;
-
-		commit transaction;
-		print 'Actualización exitosa';
-	end try
-	begin catch
-		print 'Ocurrió un error: ' + error_message();
-		rollback transaction;
-	end catch
-end;
-
-create or alter proc p_actualizarEstadoUsuario
-	@idUsuario int,
-	@estado int
-as
-begin
-	begin transaction; 
-	begin try
-		update Usuarios
-		set Estados_idEstados = @estado
-		where idUsuarios = @idUsuario;
-
-		commit transaction;
-		print 'Actualización exitosa';
-	end try
-	begin catch
-		print 'Ocurrió un error: ' + error_message();
-		rollback transaction;
-	end catch
-end;
-
-create or alter proc p_actualizarCorreoUsuario
-	@idUsuario int,
-	@correo_electronico varchar(50)
-as
-begin
-	begin transaction; 
-	begin try
-		if @correo_electronico = '' or @correo_electronico is null
-		begin
-			throw 50000, 'El correo electrónico no puede estar vacío', 1;
-		end
-		if not (@correo_electronico like '%@%.%')
-		begin
-			throw 50000, 'El formato del correo electrónico no es válido', 1;
-		end
-		
-		update Usuarios
-		set correo_electronico = @correo_electronico
-		where idUsuarios = @idUsuario;
-
-		commit transaction;
-		print 'Actualización exitosa';
-	end try
-	begin catch
-		print 'Ocurrió un error: ' + error_message();
-		rollback transaction;
-	end catch
-end;
-
-create or alter proc p_actualizarNombreCompletoUsuario
-	@idUsuario int,
-	@nombre_completo varchar(100)
-as
-begin
-	begin transaction; 
-	begin try
-		if @nombre_completo = '' or @nombre_completo is null
-		begin
-			throw 50000, 'El nombre completo no puede estar vacío', 1;
-		end
-		
-		update Usuarios
-		set nombre_completo = @nombre_completo
-		where idUsuarios = @idUsuario;
-
-		commit transaction;
-		print 'Actualización exitosa';
-	end try
-	begin catch
-		print 'Ocurrió un error: ' + error_message();
-		rollback transaction;
-	end catch
-end;
-
-create or alter proc p_actualizarPasswordUsuario
-	@idUsuario int,
-	@password varchar(45)
-as
-begin
-	begin transaction; 
-	begin try		
-		update Usuarios
-		set password = @password
-		where idUsuarios = @idUsuario;
-
-		commit transaction;
-		print 'Actualización exitosa';
-	end try
-	begin catch
-		print 'Ocurrió un error: ' + error_message();
-		rollback transaction;
-	end catch
-end;
-
-create or alter proc p_actualizarTelefonoUsuario
-	@idUsuario int,
-	@telefono varchar(45)
-as
-begin
-	begin transaction; 
-	begin try
-		if @telefono = '' or @telefono is null
-		begin
-			throw 50000, 'El teléfono no puede estar vacío', 1;
-		end
-		
-		update Usuarios
-		set telefono = @telefono
-		where idUsuarios = @idUsuario;
-
-		commit transaction;
-		print 'Actualización exitosa';
-	end try
-	begin catch
-		print 'Ocurrió un error: ' + error_message();
-		rollback transaction;
-	end catch
-end;
-
-create or alter proc p_actualizarNombreCategoria
-	@idCategoria int,
-	@nombre varchar(45)
-as
-begin
-	begin transaction;
-	begin try
-		if @nombre = '' or @nombre is null
-		begin
-			throw 50000, 'El nombre de la categoría no puede estar vacío o nulo', 1;
-		end
-
-		update CategoriaProductos
-		set nombre = @nombre
-		where idCategoriaProductos = @idCategoria;
-
-		commit transaction;
-		print 'Actualización exitosa';
-	end try
-	begin catch
-		print 'Ocurrió un error: ' + error_message();
-		rollback transaction;
-	end catch
-end;
-
-create or alter proc p_actualizarEstadoCategoria
-	@idCategoria int,
-	@estado int
-as
-begin
-	begin transaction;
-	begin try		
-		update CategoriaProductos
-		set Estados_idEstados = @estado
-		where idCategoriaProductos = @idCategoria;
-
-		commit transaction;
-		print 'Actualización exitosa';
-	end try
-	begin catch
-		print 'Ocurrió un error: ' + error_message();
-		rollback transaction;
-	end catch
-end;
-
-create or alter proc p_actualizarNombreEstado
-	@idEstado int,
-	@nombre varchar(45)
-as
-begin
-	begin transaction;
-	begin try
-		if @nombre = '' or @nombre is null
-		begin
-			throw 50000, 'El nombre del estado no puede estar vacío o nulo', 1;
-		end
-		
-		update Estados
-		set nombre = @nombre
-		where idEstados = @idEstado;
-
-		commit transaction;
-		print 'Actualización exitosa';
-	end try
-	begin catch
-		print 'Ocurrió un error: ' + error_message();
-		rollback transaction;
-	end catch
-end;
-
-create or alter proc p_actualizarNombreRol
-	@idRol int,
-	@nombre varchar(45)
-as
-begin
-	begin transaction;
-	begin try
-		if @nombre = '' or @nombre is null
-		begin
-			throw 50000, 'El nombre del rol no puede estar vacío o nulo', 1;
-		end
-
-		update Roles
-		set nombre = @nombre
-		where idRol = @idRol;
-
-		commit transaction;
-		print 'Actualización exitosa';
-	end try
-	begin catch
-		print 'Ocurrió un error: ' + error_message();
-		rollback transaction;
-	end catch
-end;
-
-create or alter proc p_actualizarCantidadOrdenDetalle
-	@idOrdenDetalle int,
-	@cantidad int
-as
-begin
-	begin transaction;
-	begin try
-		if @cantidad <= 0
-		begin
-			throw 50000, 'La cantidad debe ser un número positivo mayor a cero.', 1;
-		end
-
-		update OrdenDetalles
-		set cantidad = @cantidad
-		where idOrdenDetalles = @idOrdenDetalle;
-
-		commit transaction;
-		print 'Actualización de cantidad exitosa.';
-	end try
-	begin catch
-		print 'Ocurrió un error: ' + error_message();
-		rollback transaction;
-	end catch
-end;
-
-create or alter proc p_actualizarPrecioOrdenDetalle
-	@idOrdenDetalle int,
-	@precio float 
-as
-begin
-	begin transaction;
-	begin try
-		if @precio <= 0
-		begin
-			throw 50000, 'El precio debe ser un número positivo mayor a cero.', 1;
-		end
-
-		update OrdenDetalles
-		set precio = @precio
-		where idOrdenDetalles = @idOrdenDetalle;
-
-		commit transaction;
-		print 'Actualización de precio exitosa.';
-	end try
-	begin catch
-		print 'Ocurrió un error: ' + error_message();
-		rollback transaction;
-	end catch
-end;
-
-create or alter proc p_actualizarSubtotalOrdenDetalle
-	@idOrdenDetalle int,
-	@subtotal float
-as
-begin
-	begin transaction;
-	begin try
-		if @subtotal <= 0
-		begin
-			throw 50000, 'El subtotal debe ser un número positivo mayor a cero.', 1;
-		end
-
-		update OrdenDetalles
-		set subtotal = @subtotal
-		where idOrdenDetalles = @idOrdenDetalle;
-
-		commit transaction;
-		print 'Actualización de subtotal exitosa.';
-	end try
-	begin catch
-		print 'Ocurrió un error: ' + error_message();
-		rollback transaction;
-	end catch
-end;
-
-create or alter proc p_actualizarEstadoOrden
-	@idOrden int,
-	@estado int
-as
-begin
-	begin transaction;
-	begin try
-		update Orden
-		set Estados_idEstados = @estado
+	update Orden
+		set 
+			Estados_idEstados = @Estados_idEstados,
+			nombre_completo = @nombre_completo,
+			direccion = @direccion,
+			telefono = @telefono,
+			correo_electronico = @correo_electronico,
+			fecha_entrega = @fecha_entrega,
+			total_orden = @total_orden
 		where idOrden = @idOrden;
 
-		commit transaction;
-		print 'Actualización de estado exitosa.';
-	end try
-	begin catch
-		print 'Ocurrió un error: ' + error_message();
-		rollback transaction;
-	end catch
+	select * from Orden where idOrden = @idOrden;
 end;
 
-create or alter proc p_actualizarNombreCompletoOrden
-	@idOrden int,
-	@nombreCompleto varchar(100)
-as
-begin
-	begin transaction;
-	begin try
-		update Orden
-		set nombre_completo = @nombreCompleto
-		where idOrden = @idOrden;
+select * from Orden;
 
-		commit transaction;
-		print 'Actualización de nombre completo exitosa.';
-	end try
-	begin catch
-		print 'Ocurrió un error: ' + error_message();
-		rollback transaction;
-	end catch
-end;
-
-create or alter proc p_actualizarDireccionOrden
-	@idOrden int,
-	@direccion varchar(545)
-as
-begin
-	begin transaction;
-	begin try
-		update Orden
-		set direccion = @direccion
-		where idOrden = @idOrden;
-
-		commit transaction;
-		print 'Actualización de dirección exitosa.';
-	end try
-	begin catch
-		print 'Ocurrió un error: ' + error_message();
-		rollback transaction;
-	end catch
-end;
-
-create or alter proc p_actualizarTelefonoOrden
-	@idOrden int,
-	@telefono varchar(45)
-as
-begin
-	begin transaction;
-	begin try
-		update Orden
-		set telefono = @telefono
-		where idOrden = @idOrden;
-
-		commit transaction;
-		print 'Actualización de teléfono exitosa.';
-	end try
-	begin catch
-		print 'Ocurrió un error: ' + error_message();
-		rollback transaction;
-	end catch
-end;
-
-create or alter proc p_actualizarCorreoElectronicoOrden
-	@idOrden int,
-	@correoElectronico varchar(50)
-as
-begin
-	begin transaction;
-	begin try
-		update Orden
-		set correo_electronico = @correoElectronico
-		where idOrden = @idOrden;
-
-		commit transaction;
-		print 'Actualización de correo electrónico exitosa.';
-	end try
-	begin catch
-		print 'Ocurrió un error: ' + error_message();
-		rollback transaction;
-	end catch
-end;
-
-create or alter proc p_actualizarFechaEntregaOrden
-	@idOrden int,
-	@fechaEntrega date
-as
-begin
-	begin transaction;
-	begin try
-		update Orden
-		set fecha_entrega = @fechaEntrega
-		where idOrden = @idOrden;
-
-		commit transaction;
-		print 'Actualización de fecha de entrega exitosa.';
-	end try
-	begin catch
-		print 'Ocurrió un error: ' + error_message();
-		rollback transaction;
-	end catch
-end;
-
-create or alter proc p_actualizarRazonSocialCliente
-	@idCliente int,
-	@razonSocial varchar(245)
-as
-begin
-	begin transaction;
-	begin try
-		update Cliente
-		set razon_social = @razonSocial
-		where idCliente = @idCliente;
-
-		commit transaction;
-		print 'Actualización de razón social exitosa.';
-	end try
-	begin catch
-		print 'Ocurrió un error: ' + error_message();
-		rollback transaction;
-	end catch
-end;
-
-create or alter proc p_actualizarNombreComercialCliente
-	@idCliente int,
-	@nombreComercial varchar(200)
-as
-begin
-	begin transaction;
-	begin try
-		update Cliente
-		set nombre_comercial = @nombreComercial
-		where idCliente = @idCliente;
-
-		commit transaction;
-		print 'Actualización de nombre comercial exitosa.';
-	end try
-	begin catch
-		print 'Ocurrió un error: ' + error_message();
-		rollback transaction;
-	end catch
-end;
-
-create or alter proc p_actualizarDireccionEntregaCliente
-	@idCliente int,
-	@direccionEntrega varchar(300)
-as
-begin
-	begin transaction;
-	begin try
-		update Cliente
-		set direccion_entrega = @direccionEntrega
-		where idCliente = @idCliente;
-
-		commit transaction;
-		print 'Actualización de dirección de entrega exitosa.';
-	end try
-	begin catch
-		print 'Ocurrió un error: ' + error_message();
-		rollback transaction;
-	end catch
-end;
-
-create or alter proc p_actualizarTelefonoCliente
-	@idCliente int,
-	@telefono varchar(45)
-as
-begin
-	begin transaction;
-	begin try
-		update Cliente
-		set telefono = @telefono
-		where idCliente = @idCliente;
-
-		commit transaction;
-		print 'Actualización de teléfono exitosa.';
-	end try
-	begin catch
-		print 'Ocurrió un error: ' + error_message();
-		rollback transaction;
-	end catch
-end;
-
-create or alter proc p_actualizarEmailCliente
-	@idCliente int,
-	@email varchar(100)
-as
-begin
-	begin transaction;
-	begin try
-		update Cliente
-		set email = @email
-		where idCliente = @idCliente;
-
-		commit transaction;
-		print 'Actualización de email exitosa.';
-	end try
-	begin catch
-		print 'Ocurrió un error: ' + error_message();
-		rollback transaction;
-	end catch
-end;
+-- <fin orden>
 
 -- creacion de vistas
 
