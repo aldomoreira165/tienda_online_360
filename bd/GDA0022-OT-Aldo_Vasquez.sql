@@ -17,9 +17,9 @@ create table Productos(
 
 create table Usuarios(
 	idUsuarios int identity(1, 1),
-	correo_electronico varchar(50) not null,
+	correo_electronico varchar(50) unique not null,
 	nombre_completo varchar(100) not null,
-	password varchar(45) not null,
+	password varchar(100) not null,
 	telefono varchar(45),
 	fecha_nacimiento date not null,
 	fecha_creacion datetime not null,
@@ -211,11 +211,18 @@ end;
 -- <fin cliente>
 
 -- <inicio usuario>
+create or alter proc p_obtenerUsuarioEmail
+	@correo_electronico varchar(50)
+as
+begin
+	select * from Usuarios where correo_electronico = @correo_electronico;
+end;
+
 create or alter proc p_insertarUsuarioOperador
 	@estados_idEstados int,
 	@correo_electronico varchar(50),
 	@nombre_completo varchar(100),
-	@password varchar(45),
+	@password varchar(100),
 	@telefono varchar(45),
 	@fecha_nacimiento date, 
 	@fecha_creacion datetime
@@ -224,6 +231,11 @@ begin
 	if not exists (select 1 from Estados where idEstados = @estados_idEstados)
 	begin
 		throw 50001, 'El estado no existe.', 1;
+	end;
+
+	if exists (select 1 from Usuarios where correo_electronico = @correo_electronico)
+	begin	
+		throw 50002, 'El correo electronico ya se encuentra asociado a otro usuario', 1;
 	end;
 
 	insert into Usuarios 
@@ -239,7 +251,7 @@ create or alter proc p_insertarUsuarioCliente
     @estados_idEstados int,
     @correo_electronico varchar(50),
     @nombre_completo varchar(100),
-    @password varchar(45),
+    @password varchar(100),
     @telefono varchar(45),
     @fecha_nacimiento date, 
     @fecha_creacion datetime,
@@ -256,6 +268,11 @@ begin
         begin
             throw 50000, 'El estado proporcionado no existe.', 1;
         end
+
+		if exists (select 1 from Usuarios where correo_electronico = @correo_electronico)
+		begin	
+			throw 50001, 'El correo electronico ya se encuentra asociado a otro usuario', 1;
+		end;
 
 		-- Insertar en clientes
         declare @idClientes int;
@@ -288,16 +305,13 @@ begin
     end catch
 end;
 
-select * from Usuarios;
-select * from Clientes;
-
 create or alter proc p_actualizarUsuario
     @idUsuarios int,
     @cambioCliente bit,
     @estados_idEstados int,
     @correo_electronico varchar(50),
     @nombre_completo varchar(100),
-    @password varchar(45),
+    @password varchar(100),
     @telefono varchar(45),
     @fecha_nacimiento date
 as

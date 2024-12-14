@@ -7,7 +7,11 @@ const {
     actualizarProducto 
 } = require('../controllers/productoController');
 
+const { verificarAuth } = require('./../middlewares/verificarAutenticacion');
+
 const router = express.Router();
+
+router.use(verificarAuth);
 
 router
     .route('/')

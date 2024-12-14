@@ -7,6 +7,7 @@ const categoriaRouter = require('./routes/categoriaRoutes');
 const usuarioRouter = require('./routes/usuarioRoutes');
 const clienteRouter = require('./routes/clienteRoutes');
 const ordenRouter = require('./routes/ordenRoutes');
+const authRouter = require('./routes/authRoutes');
 
 const app = express();
 
@@ -20,5 +21,6 @@ app.use('/api/v1/categorias', categoriaRouter)
 app.use('/api/v1/usuarios', usuarioRouter)
 app.use('/api/v1/clientes', clienteRouter)
 app.use('/api/v1/ordenes', ordenRouter)
+app.use('/api/v1/auth', authRouter)
 
 module.exports = app;

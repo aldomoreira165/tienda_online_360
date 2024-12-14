@@ -1,5 +1,5 @@
 const sequelize = require('../config/db');
-const bcrypt = require('bcrypt');
+const { encriptarContraseña } = require('./../helpers/handleBcrypt')
 
 const crearUsuarioOperador = async (req, res) => {
     const { 
@@ -13,7 +13,8 @@ const crearUsuarioOperador = async (req, res) => {
     } = req.body;
 
     try {
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await encriptarContraseña(password);
+        console.log("hashedPassword", hashedPassword);
         const [results, _] = await sequelize.query(
             `EXEC p_insertarUsuarioOperador 
             @estados_idEstados = ${parseInt(estados_idEstados, 10)},
@@ -63,7 +64,7 @@ const crearUsuarioCliente = async (req, res) => {
      } = req.body;
 
     try {
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await encriptarContraseña(password);
         const [results, _] = await sequelize.query(
             `EXEC p_insertarUsuarioCliente 
             @estados_idEstados = ${parseInt(estados_idEstados, 10)},
@@ -115,7 +116,8 @@ const actualizarUsuario = async (req, res) => {
     } = req.body;
 
     try {
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await encriptarContraseña(password);
+        console.log("hashedPassword", hashedPassword);
         const [results, _] = await sequelize.query(
             `EXEC p_actualizarUsuario 
             @idUsuarios = ${parseInt(id, 10)},

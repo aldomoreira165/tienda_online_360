@@ -4,6 +4,8 @@ const { crearEstado, obtenerEstados, obtenerEstadoId } = require('./../controlle
 
 const router = express.Router();
 
+const { verificarAuth } = require('./../middlewares/verificarAutenticacion');
+
 router
     .route('/')
     .get(obtenerEstados)
