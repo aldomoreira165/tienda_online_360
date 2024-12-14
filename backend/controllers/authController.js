@@ -1,5 +1,6 @@
 const sequelize = require("../config/db");
 const { compararContraseña } = require('./../helpers/handleBcrypt');
+const {  generarToken } = require('./../helpers/handleToken')
 
 const login = async (req, res) => {
     const { correo_electronico, contraseña } = req.body;
@@ -20,6 +21,15 @@ const login = async (req, res) => {
             throw new Error("Contraseña incorrecta");
         }
 
+        // generando objeto usuario para generar token
+        const usuarioToken = {
+            id: results[0].idUsuarios,
+            rol: results[0].Rol_idRol
+        };
+        
+        const token = await generarToken(usuarioToken);
+        console.log(token);
+
         res.status(200).json({
             estado: "exito",
             data: {
@@ -32,7 +42,8 @@ const login = async (req, res) => {
                 estado: results[0].Estados_idEstados,
                 rol: results[0].Rol_idRol,
                 cliente: results[0].Clientes_idClientes
-            }
+            },
+            token: token
         });
     }
     catch (error) {

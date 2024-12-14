@@ -7,7 +7,11 @@ const {
     actualizarCategoria 
 } = require('./../controllers/categoriaController');
 
+const { verificarAuth } = require('./../middlewares/verificarAutenticacion');
+
 const router = express.Router();
+
+router.use(verificarAuth);
 
 router
     .route('/')
