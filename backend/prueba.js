@@ -1,1 +1,0 @@
-console.log(('$2b$10$zoX4bVsGUseJa3r6eAG79ezOWZoszZQdg4rWHeRy0oe5k8UUx8hGm').length)
