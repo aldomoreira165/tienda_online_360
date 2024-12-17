@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import {
   Paper,
@@ -23,6 +24,7 @@ const photos = [{ url: slide1 }, { url: slide2 }, { url: slide3 }];
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
   
   const handleSubmit = async() => {
     try {
@@ -31,11 +33,14 @@ export default function Login() {
             contraseña: password
         })
 
-        // mostrar respuesta en consola en formato JSON
         console.log(response.data.token);
     } catch (error) {
         console.log(error);
     }
+  };
+
+  const handleSignUpClick = () => {
+    navigate("/signup");
   };
 
   const settings = {
@@ -119,6 +124,7 @@ export default function Login() {
                 variant="contained"
                 color="primary"
                 fullWidth
+                onClick={handleSignUpClick}
                 sx={{ marginTop: 2 }}
               >
                 Registrarse
