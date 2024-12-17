@@ -9,7 +9,6 @@ const crearUsuarioOperador = async (req, res) => {
         password, 
         telefono, 
         fecha_nacimiento, 
-        fecha_creacion 
     } = req.body;
 
     try {
@@ -22,8 +21,7 @@ const crearUsuarioOperador = async (req, res) => {
             @nombre_completo = '${nombre_completo}',
             @password = '${hashedPassword}',
             @telefono = '${telefono}',
-            @fecha_nacimiento = '${fecha_nacimiento}',
-            @fecha_creacion = '${fecha_creacion}'`
+            @fecha_nacimiento = '${fecha_nacimiento}'`
         );
 
         res.status(200).json({
