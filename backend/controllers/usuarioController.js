@@ -55,7 +55,6 @@ const crearUsuarioCliente = async (req, res) => {
         password,
         telefono,
         fecha_nacimiento,
-        fecha_creacion,
         razon_social,
         nombre_comercial,
         direccion_entrega
@@ -71,7 +70,6 @@ const crearUsuarioCliente = async (req, res) => {
             @password = '${hashedPassword}',
             @telefono = '${telefono}',
             @fecha_nacimiento = '${fecha_nacimiento}',
-            @fecha_creacion = '${fecha_creacion}',
             @razon_social = '${razon_social}',
             @nombre_comercial = '${nombre_comercial}',
             @direccion_entrega = '${direccion_entrega}'`

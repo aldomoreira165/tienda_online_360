@@ -9,6 +9,7 @@ import TextField from "@mui/material/TextField";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 import AppBarBack from "./../components/AppBarBack";
+import AlertMessage from "./../components/AlertMessage";
 import axios from "axios";
 
 export default function SignUp() {
@@ -21,27 +22,70 @@ export default function SignUp() {
   const [razonSocial, setRazonSocial] = React.useState("");
   const [nombreComercial, setNombreComercial] = React.useState("");
   const [direccionEntrega, setDireccionEntrega] = React.useState("");
+  const [alertMessage, setAlertMessage] = React.useState("");
+  const [alertSeverity, setAlertSeverity] = React.useState("success");
+  const [openAlert, setOpenAlert] = React.useState(false);
 
   const handleSubmit = async () => {
-    if (rol === "Operador") {
-      const data = {
+    try {
+      let data = {
         estados_idEstados: 1,
         correo_electronico: email,
         nombre_completo: nombre,
         password: contraseña,
         telefono: telefono,
-        fecha_nacimiento: fechaNacimiento
+        fecha_nacimiento: fechaNacimiento,
+      };
+
+      if (rol === "Cliente") {
+        data = {
+          ...data,
+          razon_social: razonSocial,
+          nombre_comercial: nombreComercial,
+          direccion_entrega: direccionEntrega,
+        };
       }
 
-      console.log(data);
+      const url =
+        rol === "Operador"
+          ? "http://localhost:3000/api/v1/usuarios/operador"
+          : "http://localhost:3000/api/v1/usuarios/cliente";
 
-      const response = await axios.post("http://localhost:3000/api/v1/usuarios/operador", data);
-      console.log(response);
-    } 
+      const response = await axios.post(url, data);
+
+      if (response.status === 201 || response.status === 200) {
+        setAlertMessage("¡Usuario registrado con éxito!");
+        setAlertSeverity("success");
+        
+        setRol("");
+        setEmail("");
+        setNombre("");
+        setContraseña("");
+        setTelefono("");
+        setFechaNacimiento("");
+        setRazonSocial("");
+        setNombreComercial("");
+        setDireccionEntrega("");
+      } else {
+        setAlertMessage("Algo salió mal. Inténtalo de nuevo.");
+        setAlertSeverity("error");
+      }
+    } catch (error) {
+      setAlertMessage(
+        error.response?.data?.message || "Error al registrar el usuario."
+      );
+      setAlertSeverity("error");
+    } finally {
+      setOpenAlert(true);
+    }
   };
 
   const handleChange = (event) => {
     setRol(event.target.value);
+  };
+
+  const handleCloseAlert = () => {
+    setOpenAlert(false);
   };
 
   return (
@@ -80,9 +124,11 @@ export default function SignUp() {
                     label="Correo electrónico"
                     variant="outlined"
                     margin="normal"
+                    value={email}
                     required
                     fullWidth
                     onChange={(e) => setEmail(e.target.value)}
+                    disabled={rol === ""}
                   />
                 </Grid>
 
@@ -91,9 +137,11 @@ export default function SignUp() {
                     label="Nombre"
                     variant="outlined"
                     margin="normal"
+                    value={nombre}
                     required
                     fullWidth
                     onChange={(e) => setNombre(e.target.value)}
+                    disabled={rol === ""}
                   />
                 </Grid>
               </Grid>
@@ -104,10 +152,12 @@ export default function SignUp() {
                     label="Contraseña"
                     variant="outlined"
                     margin="normal"
+                    value={contraseña}
                     type="password"
                     required
                     fullWidth
                     onChange={(e) => setContraseña(e.target.value)}
+                    disabled={rol === ""}
                   />
                 </Grid>
 
@@ -116,10 +166,12 @@ export default function SignUp() {
                     label="Teléfono"
                     variant="outlined"
                     margin="normal"
+                    value={telefono}
                     type="number"
                     required
                     fullWidth
                     onChange={(e) => setTelefono(e.target.value)}
+                    disabled={rol === ""}
                   />
                 </Grid>
 
@@ -128,10 +180,12 @@ export default function SignUp() {
                     label="Fecha de nacimiento"
                     variant="outlined"
                     margin="normal"
+                    value={fechaNacimiento}
                     type="normal"
                     required
                     fullWidth
                     onChange={(e) => setFechaNacimiento(e.target.value)}
+                    disabled={rol === ""}
                   />
                 </Grid>
               </Grid>
@@ -142,10 +196,11 @@ export default function SignUp() {
                     label="Razón social"
                     variant="outlined"
                     margin="normal"
+                    value={razonSocial}
                     required
                     fullWidth
                     onChange={(e) => setRazonSocial(e.target.value)}
-                    disabled={rol === "Operador"}
+                    disabled={rol === "Operador" || rol === ""}
                   />
                 </Grid>
 
@@ -154,10 +209,11 @@ export default function SignUp() {
                     label="Nombre comercial"
                     variant="outlined"
                     margin="normal"
+                    value={nombreComercial}
                     required
                     fullWidth
                     onChange={(e) => setNombreComercial(e.target.value)}
-                    disabled={rol === "Operador"}
+                    disabled={rol === "Operador" || rol === ""}
                   />
                 </Grid>
               </Grid>
@@ -166,10 +222,11 @@ export default function SignUp() {
                 label="Dirección de entrega"
                 variant="outlined"
                 margin="normal"
+                value={direccionEntrega}
                 required
                 fullWidth
                 onChange={(e) => setDireccionEntrega(e.target.value)}
-                disabled={rol === "Operador"}
+                disabled={rol === "Operador" || rol === ""}
               />
 
               <Box sx={{ display: "flex", justifyContent: "center" }}>
@@ -179,6 +236,18 @@ export default function SignUp() {
                   fullWidth
                   sx={{ marginTop: 2, width: "25%" }}
                   onClick={handleSubmit}
+                  disabled={
+                    rol === "" ||
+                    email === "" ||
+                    nombre === "" ||
+                    contraseña === "" ||
+                    telefono === "" ||
+                    fechaNacimiento === "" ||
+                    (rol === "Cliente" &&
+                      (razonSocial === "" ||
+                        nombreComercial === "" ||
+                        direccionEntrega === ""))
+                  }
                 >
                   Registrarse
                 </Button>
@@ -187,6 +256,12 @@ export default function SignUp() {
           </Box>
         </Paper>
       </Box>
+      <AlertMessage
+        openAlert={openAlert}
+        closeAlert={handleCloseAlert}
+        alertSeverity={alertSeverity}
+        alertMessage={alertMessage}
+      />
     </Box>
   );
 }

@@ -1,3 +1,4 @@
+import React from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -12,6 +13,7 @@ import {
 import Slider from "react-slick";
 import axios from "axios";
 import logo from "./../assets/images/tiendita_logo.jpg";
+import AlertMessage from "./../components/AlertMessage";
 import slide1 from "./../assets/images/slide1.jpg";
 import slide2 from "./../assets/images/slide2.jpg";
 import slide3 from "./../assets/images/slide3.jpg";
@@ -24,23 +26,55 @@ const photos = [{ url: slide1 }, { url: slide2 }, { url: slide3 }];
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [alertMessage, setAlertMessage] = React.useState("");
+  const [alertSeverity, setAlertSeverity] = React.useState("success");
+  const [openAlert, setOpenAlert] = React.useState(false);
   const navigate = useNavigate();
-  
-  const handleSubmit = async() => {
-    try {
-        const response = await axios.post("http://localhost:3000/api/v1/auth/login", {
-            correo_electronico: email,
-            contraseña: password
-        })
 
-        console.log(response.data.token);
+  const handleSubmit = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/api/v1/auth/login",
+        {
+          correo_electronico: email,
+          contraseña: password,
+        }
+      );
+
+      const rol = response.data.data.rol;
+
+      // seteando alerta
+      setAlertSeverity("success");
+      setAlertMessage("Inicio de sesión exitoso. Redirigiendo...");
+      setOpenAlert(true);
+
+      if (rol === 1) {
+        setTimeout(() => navigate("/client"), 2000);
+      } else if (rol === 2) {
+        setTimeout(() => navigate("/operator"), 2000);
+      } else {
+        setAlertSeverity("warning");
+        setAlertMessage("No se reconoce el rol del usuario.");
+        setOpenAlert(true);
+        console.warn("No existe el rol");
+      }
     } catch (error) {
-        console.log(error);
+      setAlertSeverity("error");
+      setAlertMessage(
+        error.response?.data?.message ||
+          "Error al iniciar sesión. Verifica tus credenciales."
+      );
+      setOpenAlert(true);
+      console.log(error);
     }
   };
 
   const handleSignUpClick = () => {
     navigate("/signup");
+  };
+
+  const handleCloseAlert = () => {
+    setOpenAlert(false);
   };
 
   const settings = {
@@ -133,6 +167,12 @@ export default function Login() {
           </Box>
         </Grid>
       </Grid>
+      <AlertMessage
+        openAlert={openAlert}
+        closeAlert={handleCloseAlert}
+        alertSeverity={alertSeverity}
+        alertMessage={alertMessage}
+      />
     </Box>
   );
 }
