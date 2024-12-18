@@ -41,17 +41,24 @@ export default function Login() {
         }
       );
 
-      const rol = response.data.data.rol;
+      const { id, rol, estado } = response.data.data;
+      const token = response.data.token;
 
       // seteando alerta
       setAlertSeverity("success");
       setAlertMessage("Inicio de sesión exitoso. Redirigiendo...");
       setOpenAlert(true);
 
-      if (rol === 1) {
+      if (rol === 1 && estado === 1) {
         setTimeout(() => navigate("/client"), 2000);
-      } else if (rol === 2) {
+        localStorage.setItem("token", token);
+        localStorage.setItem("idUsuario", id);
+        localStorage.setItem("rolUsuario", rol);
+      } else if (rol === 2 && estado === 1) {
         setTimeout(() => navigate("/operator"), 2000);
+        localStorage.setItem("token", token);
+        localStorage.setItem("idUsuario", id);
+        localStorage.setItem("rolUsuario", rol);
       } else {
         setAlertSeverity("warning");
         setAlertMessage("No se reconoce el rol del usuario.");
