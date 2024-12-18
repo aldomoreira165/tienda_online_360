@@ -11,7 +11,7 @@ create table Productos(
 	stock int not null,
 	precio float not null, 
 	fecha_creacion datetime not null, 
-	foto binary, 
+	foto varchar(255), 
 	constraint PK_Productos primary key (idProductos)
 );
 
@@ -224,8 +224,7 @@ create or alter proc p_insertarUsuarioOperador
 	@nombre_completo varchar(100),
 	@password varchar(100),
 	@telefono varchar(45),
-	@fecha_nacimiento date, 
-	@fecha_creacion datetime
+	@fecha_nacimiento date
 as
 begin
 	if not exists (select 1 from Estados where idEstados = @estados_idEstados)
@@ -242,10 +241,13 @@ begin
 		(Rol_idRol, Estados_idEstados, correo_electronico, nombre_completo, 
 		password, telefono, fecha_nacimiento, fecha_creacion, Clientes_idClientes)
 	values
-		(2, @estados_idEstados, @correo_electronico, @nombre_completo, @password, @telefono, @fecha_nacimiento, @fecha_creacion, NULL);
+		(2, @estados_idEstados, @correo_electronico, @nombre_completo, @password, @telefono, @fecha_nacimiento, getdate(), NULL);
 
 	select * from Usuarios where idUsuarios = scope_identity();
 end;
+
+select * from Usuarios;
+select * from Clientes;
 
 create or alter proc p_insertarUsuarioCliente
     @estados_idEstados int,
@@ -254,7 +256,6 @@ create or alter proc p_insertarUsuarioCliente
     @password varchar(100),
     @telefono varchar(45),
     @fecha_nacimiento date, 
-    @fecha_creacion datetime,
     @razon_social varchar(245),
     @nombre_comercial varchar(100),
     @direccion_entrega varchar(100)
@@ -283,7 +284,7 @@ begin
 
         -- Insertar en Usuarios
         insert into Usuarios (correo_electronico, nombre_completo, password, telefono, fecha_nacimiento, fecha_creacion, Rol_idRol, Estados_idEstados, Clientes_idClientes)
-        values (@correo_electronico, @nombre_completo, @password, @telefono, @fecha_nacimiento, @fecha_creacion, 1, @estados_idEstados, @idClientes);
+        values (@correo_electronico, @nombre_completo, @password, @telefono, @fecha_nacimiento, getdate(), 1, @estados_idEstados, @idClientes);
 
         commit transaction;
 
@@ -507,7 +508,7 @@ create or alter proc p_insertarProductos
     @estados_idEstados int,
     @precio float,
     @fecha_creacion datetime,
-    @foto binary = null
+    @foto varchar(255) = null
 as
 begin
 	-- Validar que la categoría exista
@@ -559,7 +560,7 @@ create or alter proc p_actualizarProducto
     @stock int,
     @estados_idEstados int,
     @precio float,
-	@foto binary = null
+	@foto varchar(255) = null
 as
 begin
 	-- Validando que el producto existe

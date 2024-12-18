@@ -7,6 +7,7 @@ export default function AlertMessage({openAlert, closeAlert, alertSeverity, aler
       open={openAlert}
       autoHideDuration={6000}
       onClose={closeAlert}
+      anchorOrigin={{ vertical: "top", horizontal: "right" }}
     >
       <Alert
         onClose={closeAlert}
