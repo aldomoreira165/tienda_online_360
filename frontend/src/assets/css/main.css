@@ -1,0 +1,17 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Roboto";
+}
+
+.logo {
+    width: 6rem;
+    border-radius: 6rem;
+}
+
+.logo-nav {
+    width: 4rem;
+    border-radius: 6rem;
+    margin: 1rem;
+}

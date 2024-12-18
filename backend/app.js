@@ -1,5 +1,6 @@
 const express = require('express');
 const morgan = require('morgan');
+const cors = require('cors');
 
 const productoRouter = require('./routes/productoRoutes');
 const estadoRouter = require('./routes/estadoRoutes');
@@ -10,6 +11,10 @@ const ordenRouter = require('./routes/ordenRoutes');
 const authRouter = require('./routes/authRoutes');
 
 const app = express();
+
+app.use(cors({
+    origin: "*"
+}));
 
 app.use(morgan('dev'));
 
