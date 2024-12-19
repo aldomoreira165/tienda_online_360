@@ -148,8 +148,72 @@ const actualizarUsuario = async (req, res) => {
     }
 };
 
+const obtenerUsuarioId = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const [results, _] = await sequelize.query(
+            `EXEC p_obtenerUsuarioId @idUsuarios = ${parseInt(id, 10)}`
+        );
+
+        res.status(200).json({
+            estado: 'exito',
+            data: {
+                id: results[0].idUsuarios,
+                nombre: results[0].nombre_completo,
+                password: results[0].password,
+                correo: results[0].correo_electronico,
+                telefono: results[0].telefono,
+                fechaNacimiento: results[0].fecha_nacimiento,
+                fechaCreacion: results[0].fecha_creacion,
+                estado: results[0].Estados_idEstados,
+                rol: results[0].Rol_idRol,
+                cliente: results[0].Clientes_idClientes
+            }
+        });
+    } catch (error) {
+        res.status(400).json({
+            estado: 'error',
+            mensaje: error.message,
+        });
+    }
+};
+
+const obtenerUsuarioEmail = async (req, res) => {
+    const { email } = req.params;
+
+    try {
+        const [results, _] = await sequelize.query(
+            `EXEC p_obtenerUsuarioEmail @correo_electronico = '${email}'`
+        );
+
+        res.status(200).json({
+            estado: 'exito',
+            data: {
+                id: results[0].idUsuarios,
+                nombre: results[0].nombre_completo,
+                password: results[0].password,
+                correo: results[0].correo_electronico,
+                telefono: results[0].telefono,
+                fechaNacimiento: results[0].fecha_nacimiento,
+                fechaCreacion: results[0].fecha_creacion,
+                estado: results[0].Estados_idEstados,
+                rol: results[0].Rol_idRol,
+                cliente: results[0].Clientes_idClientes
+            }
+        });
+    } catch (error) {
+        res.status(400).json({
+            estado: 'error',
+            mensaje: error.message,
+        });
+    }
+};
+
 module.exports = {
     crearUsuarioCliente,
     crearUsuarioOperador,
-    actualizarUsuario
+    actualizarUsuario,
+    obtenerUsuarioId,
+    obtenerUsuarioEmail
 };

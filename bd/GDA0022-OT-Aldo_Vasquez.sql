@@ -2,6 +2,8 @@ create database GDA0022OTAldoVasquez;
 
 use GDA0022OTAldoVasquez;
 
+select * from Usuarios;
+
 -- creacion de tablas
 create table Productos(
 	idProductos int identity(1, 1), 
@@ -211,6 +213,16 @@ end;
 -- <fin cliente>
 
 -- <inicio usuario>
+
+select * from Usuarios;
+
+create or alter proc p_obtenerUsuarioId
+	@idUsuarios int
+as
+begin
+	select * from Usuarios where idUsuarios = @idUsuarios;
+end;
+
 create or alter proc p_obtenerUsuarioEmail
 	@correo_electronico varchar(50)
 as

@@ -7,8 +7,7 @@ import {
   TextField,
   Box,
   Button,
-  Grid,
-  CssBaseline,
+  Grid
 } from "@mui/material";
 import Slider from "react-slick";
 import axios from "axios";
@@ -31,6 +30,7 @@ export default function Login() {
   const [openAlert, setOpenAlert] = React.useState(false);
   const navigate = useNavigate();
 
+  // manejo de inicio de sesión
   const handleSubmit = async () => {
     try {
       const response = await axios.post(
@@ -41,7 +41,7 @@ export default function Login() {
         }
       );
 
-      const { id, rol, estado } = response.data.data;
+      const { id, rol, estado, correo } = response.data.data;
       const token = response.data.token;
 
       // seteando alerta
@@ -54,11 +54,13 @@ export default function Login() {
         localStorage.setItem("token", token);
         localStorage.setItem("idUsuario", id);
         localStorage.setItem("rolUsuario", rol);
+        localStorage.setItem("emailUsuario", correo);
       } else if (rol === 2 && estado === 1) {
         setTimeout(() => navigate("/operator"), 2000);
         localStorage.setItem("token", token);
         localStorage.setItem("idUsuario", id);
         localStorage.setItem("rolUsuario", rol);
+        localStorage.setItem("emailUsuario", correo);
       } else {
         setAlertSeverity("warning");
         setAlertMessage("No se reconoce el rol del usuario.");
@@ -68,11 +70,10 @@ export default function Login() {
     } catch (error) {
       setAlertSeverity("error");
       setAlertMessage(
-        error.response?.data?.message ||
+        error.response?.data?.mensaje ||
           "Error al iniciar sesión. Verifica tus credenciales."
       );
       setOpenAlert(true);
-      console.log(error);
     }
   };
 
@@ -95,11 +96,10 @@ export default function Login() {
   };
 
   return (
-    <Box sx={{ flexGrow: 1, height: "100vh" }}>
-      <CssBaseline />
+    <Box sx={{ flexGrow: 1, height: "100vh", overflow: "hidden"  }}>
       <Grid container sx={{ height: "100%" }}>
-        <Grid item xs={7}>
-          <Box sx={{ height: "100%" }}>
+        <Grid item xs={7} sx={{ height: "100%" }}>
+          <Box sx={{ height: "100%", width: "100%" }}>
             <Slider {...settings}>
               {photos.map((photo, index) => (
                 <Box
@@ -116,7 +116,7 @@ export default function Login() {
           </Box>
         </Grid>
 
-        <Grid item xs={5}>
+        <Grid item xs={5} sx={{ height: "100%" }}>
           <Box
             sx={{
               display: "flex",
@@ -137,6 +137,7 @@ export default function Login() {
                 label="Correo electrónico"
                 variant="outlined"
                 margin="normal"
+                type="email"
                 required
                 fullWidth
                 value={email}

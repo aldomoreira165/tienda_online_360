@@ -10,6 +10,7 @@ import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 import AppBarBack from "./../components/AppBarBack";
 import AlertMessage from "./../components/AlertMessage";
+import { Typography } from "@mui/material";
 import axios from "axios";
 
 export default function SignUp() {
@@ -56,7 +57,7 @@ export default function SignUp() {
       if (response.status === 201 || response.status === 200) {
         setAlertMessage("¡Usuario registrado con éxito!");
         setAlertSeverity("success");
-        
+
         setRol("");
         setEmail("");
         setNombre("");
@@ -72,7 +73,7 @@ export default function SignUp() {
       }
     } catch (error) {
       setAlertMessage(
-        error.response?.data?.message || "Error al registrar el usuario."
+        error.response?.data?.mensaje || "Error al registrar el usuario."
       );
       setAlertSeverity("error");
     } finally {
@@ -95,166 +96,179 @@ export default function SignUp() {
         sx={{
           flexGrow: 1,
           height: "90vh",
+          width: "100%",
           padding: "2rem",
+          paddingTop: "0",
           display: "flex",
           alignItems: "center",
+          justifyContent: "center",
         }}
       >
-        <Paper elevation={8} sx={{ height: "90%", width: "100%" }}>
-          <Box
-            sx={{
-              padding: "3rem",
-            }}
-          >
-            <FormControl fullWidth sx={{ height: "100%" }}>
-              <InputLabel>Rol</InputLabel>
-              <Select
-                id="select-rol"
-                value={rol}
-                label="Rol"
-                onChange={handleChange}
-              >
-                <MenuItem value="Cliente">Cliente</MenuItem>
-                <MenuItem value="Operador">Operador</MenuItem>
-              </Select>
-
-              <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <TextField
-                    label="Correo electrónico"
-                    variant="outlined"
-                    margin="normal"
-                    value={email}
-                    required
-                    fullWidth
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={rol === ""}
-                  />
-                </Grid>
-
-                <Grid item xs={6}>
-                  <TextField
-                    label="Nombre"
-                    variant="outlined"
-                    margin="normal"
-                    value={nombre}
-                    required
-                    fullWidth
-                    onChange={(e) => setNombre(e.target.value)}
-                    disabled={rol === ""}
-                  />
-                </Grid>
-              </Grid>
-
-              <Grid container spacing={2}>
-                <Grid item xs={4}>
-                  <TextField
-                    label="Contraseña"
-                    variant="outlined"
-                    margin="normal"
-                    value={contraseña}
-                    type="password"
-                    required
-                    fullWidth
-                    onChange={(e) => setContraseña(e.target.value)}
-                    disabled={rol === ""}
-                  />
-                </Grid>
-
-                <Grid item xs={4}>
-                  <TextField
-                    label="Teléfono"
-                    variant="outlined"
-                    margin="normal"
-                    value={telefono}
-                    type="number"
-                    required
-                    fullWidth
-                    onChange={(e) => setTelefono(e.target.value)}
-                    disabled={rol === ""}
-                  />
-                </Grid>
-
-                <Grid item xs={4}>
-                  <TextField
-                    label="Fecha de nacimiento"
-                    variant="outlined"
-                    margin="normal"
-                    value={fechaNacimiento}
-                    type="normal"
-                    required
-                    fullWidth
-                    onChange={(e) => setFechaNacimiento(e.target.value)}
-                    disabled={rol === ""}
-                  />
-                </Grid>
-              </Grid>
-
-              <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <TextField
-                    label="Razón social"
-                    variant="outlined"
-                    margin="normal"
-                    value={razonSocial}
-                    required
-                    fullWidth
-                    onChange={(e) => setRazonSocial(e.target.value)}
-                    disabled={rol === "Operador" || rol === ""}
-                  />
-                </Grid>
-
-                <Grid item xs={6}>
-                  <TextField
-                    label="Nombre comercial"
-                    variant="outlined"
-                    margin="normal"
-                    value={nombreComercial}
-                    required
-                    fullWidth
-                    onChange={(e) => setNombreComercial(e.target.value)}
-                    disabled={rol === "Operador" || rol === ""}
-                  />
-                </Grid>
-              </Grid>
-
-              <TextField
-                label="Dirección de entrega"
-                variant="outlined"
-                margin="normal"
-                value={direccionEntrega}
-                required
-                fullWidth
-                onChange={(e) => setDireccionEntrega(e.target.value)}
-                disabled={rol === "Operador" || rol === ""}
-              />
-
-              <Box sx={{ display: "flex", justifyContent: "center" }}>
-                <Button
-                  variant="contained"
-                  color="success"
-                  fullWidth
-                  sx={{ marginTop: 2, width: "25%" }}
-                  onClick={handleSubmit}
-                  disabled={
-                    rol === "" ||
-                    email === "" ||
-                    nombre === "" ||
-                    contraseña === "" ||
-                    telefono === "" ||
-                    fechaNacimiento === "" ||
-                    (rol === "Cliente" &&
-                      (razonSocial === "" ||
-                        nombreComercial === "" ||
-                        direccionEntrega === ""))
-                  }
+        <Box sx={{ width: "100%" }}>
+          <Typography variant="h6" component="h1" gutterBottom align="center">
+            Registro de Usuarios/Operadores
+          </Typography>
+          <Paper elevation={8} sx={{ height: "90%", width: "100%", marginTop: 5 }}>
+            <Box
+              sx={{
+                padding: "3rem",
+              }}
+            >
+              <FormControl fullWidth sx={{ height: "100%" }}>
+                <InputLabel>Rol</InputLabel>
+                <Select
+                  id="select-rol"
+                  value={rol}
+                  label="Rol"
+                  onChange={handleChange}
                 >
-                  Registrarse
-                </Button>
-              </Box>
-            </FormControl>
-          </Box>
-        </Paper>
+                  <MenuItem value="Cliente">Cliente</MenuItem>
+                  <MenuItem value="Operador">Operador</MenuItem>
+                </Select>
+
+                <Grid container spacing={2}>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Correo electrónico"
+                      variant="outlined"
+                      margin="normal"
+                      type="email"
+                      value={email}
+                      required
+                      fullWidth
+                      onChange={(e) => setEmail(e.target.value)}
+                      disabled={rol === ""}
+                    />
+                  </Grid>
+
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Nombre"
+                      variant="outlined"
+                      margin="normal"
+                      type="text"
+                      value={nombre}
+                      required
+                      fullWidth
+                      onChange={(e) => setNombre(e.target.value)}
+                      disabled={rol === ""}
+                    />
+                  </Grid>
+                </Grid>
+
+                <Grid container spacing={2}>
+                  <Grid item xs={4}>
+                    <TextField
+                      label="Contraseña"
+                      variant="outlined"
+                      margin="normal"
+                      value={contraseña}
+                      type="password"
+                      required
+                      fullWidth
+                      onChange={(e) => setContraseña(e.target.value)}
+                      disabled={rol === ""}
+                    />
+                  </Grid>
+
+                  <Grid item xs={4}>
+                    <TextField
+                      label="Teléfono"
+                      variant="outlined"
+                      margin="normal"
+                      value={telefono}
+                      type="tel"
+                      required
+                      fullWidth
+                      onChange={(e) => setTelefono(e.target.value)}
+                      disabled={rol === ""}
+                    />
+                  </Grid>
+
+                  <Grid item xs={4}>
+                    <TextField
+                      label="Fecha de nacimiento"
+                      variant="outlined"
+                      margin="normal"
+                      value={fechaNacimiento}
+                      type="date"
+                      required
+                      fullWidth
+                      onChange={(e) => setFechaNacimiento(e.target.value)}
+                      disabled={rol === ""}
+                    />
+                  </Grid>
+                </Grid>
+
+                <Grid container spacing={2}>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Razón social"
+                      variant="outlined"
+                      margin="normal"
+                      type="text"
+                      value={razonSocial}
+                      required
+                      fullWidth
+                      onChange={(e) => setRazonSocial(e.target.value)}
+                      disabled={rol === "Operador" || rol === ""}
+                    />
+                  </Grid>
+
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Nombre comercial"
+                      variant="outlined"
+                      margin="normal"
+                      type="text"
+                      value={nombreComercial}
+                      required
+                      fullWidth
+                      onChange={(e) => setNombreComercial(e.target.value)}
+                      disabled={rol === "Operador" || rol === ""}
+                    />
+                  </Grid>
+                </Grid>
+
+                <TextField
+                  label="Dirección de entrega"
+                  variant="outlined"
+                  margin="normal"
+                  type="text"
+                  value={direccionEntrega}
+                  required
+                  fullWidth
+                  onChange={(e) => setDireccionEntrega(e.target.value)}
+                  disabled={rol === "Operador" || rol === ""}
+                />
+
+                <Box sx={{ display: "flex", justifyContent: "center" }}>
+                  <Button
+                    variant="contained"
+                    color="success"
+                    fullWidth
+                    sx={{ marginTop: 2, width: "25%" }}
+                    onClick={handleSubmit}
+                    disabled={
+                      rol === "" ||
+                      email === "" ||
+                      nombre === "" ||
+                      contraseña === "" ||
+                      telefono === "" ||
+                      fechaNacimiento === "" ||
+                      (rol === "Cliente" &&
+                        (razonSocial === "" ||
+                          nombreComercial === "" ||
+                          direccionEntrega === ""))
+                    }
+                  >
+                    Registrarse
+                  </Button>
+                </Box>
+              </FormControl>
+            </Box>
+          </Paper>
+        </Box>
       </Box>
       <AlertMessage
         openAlert={openAlert}
