@@ -1,8 +1,10 @@
 import * as React from "react";
+import { useNavigate } from "react-router-dom";
 import ListSubheader from "@mui/material/ListSubheader";
 import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
+import StyleIcon from '@mui/icons-material/Style';
 import ListItemText from "@mui/material/ListItemText";
 import Collapse from "@mui/material/Collapse";
 import ProductionQuantityLimitsIcon from "@mui/icons-material/ProductionQuantityLimits";
@@ -10,15 +12,19 @@ import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
-import { useNavigate } from "react-router-dom";
 
 export default function AsideBar() {
-  const [open, setOpen] = React.useState(true);
+  const [openProducts, setOpenProducts] = React.useState(true);
+  const [openCategories, setOpenCategories] = React.useState(true);
   const navigate = useNavigate();
 
-  const handleClick = () => {
-    setOpen(!open);
+  const handleClickProducts = () => {
+    setOpenProducts(!openProducts);
   };
+
+  const handleClickCategories = () => {
+    setOpenCategories(!openCategories);
+  }
 
   const handleAddProduct = () => {
     navigate("/operator/product/add");
@@ -26,6 +32,14 @@ export default function AsideBar() {
 
   const handleModifyProduct = () => {
     navigate("/operator/product/modify");
+  };
+
+  const handleAddCategory = () => {
+    navigate("/operator/category/add");
+  };
+
+  const handleModifyCategory = () => {
+    navigate("/operator/category/modify");
   };
 
   return (
@@ -39,14 +53,14 @@ export default function AsideBar() {
         </ListSubheader>
       }
     >
-      <ListItemButton onClick={handleClick}>
+      <ListItemButton onClick={handleClickProducts}>
         <ListItemIcon>
           <ProductionQuantityLimitsIcon />
         </ListItemIcon>
         <ListItemText primary="Productos" />
-        {open ? <ExpandLess /> : <ExpandMore />}
+        {openProducts ? <ExpandLess /> : <ExpandMore />}
       </ListItemButton>
-      <Collapse in={open} timeout="auto" unmountOnExit>
+      <Collapse in={openProducts} timeout="auto" unmountOnExit>
         <List component="div" disablePadding>
           <ListItemButton sx={{ pl: 4 }} onClick={handleAddProduct}>
             <ListItemIcon>
@@ -55,6 +69,29 @@ export default function AsideBar() {
             <ListItemText primary="Agregar" />
           </ListItemButton>
           <ListItemButton sx={{ pl: 4 }} onClick={handleModifyProduct}>
+            <ListItemIcon>
+              <EditIcon />
+            </ListItemIcon>
+            <ListItemText primary="Modificar" />
+          </ListItemButton>
+        </List>
+      </Collapse>
+      <ListItemButton onClick={handleClickCategories}>
+        <ListItemIcon>
+          <StyleIcon />
+        </ListItemIcon>
+        <ListItemText primary="Categorías" />
+        {openCategories ? <ExpandLess /> : <ExpandMore />}
+      </ListItemButton>
+      <Collapse in={openCategories} timeout="auto" unmountOnExit>
+        <List component="div" disablePadding>
+          <ListItemButton sx={{ pl: 4 }} onClick={handleAddCategory}>
+            <ListItemIcon>
+              <AddIcon />
+            </ListItemIcon>
+            <ListItemText primary="Agregar" />
+          </ListItemButton>
+          <ListItemButton sx={{ pl: 4 }} onClick={handleModifyCategory}>
             <ListItemIcon>
               <EditIcon />
             </ListItemIcon>

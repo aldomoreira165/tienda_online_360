@@ -6,7 +6,8 @@ const generarToken = async(user) => {
     return jwt.sign(
         {
             id: user.id,
-            rol: user.rol
+            rol: user.rol,
+            email: user.email
         },
         process.env.JWT_SECRET,
         {

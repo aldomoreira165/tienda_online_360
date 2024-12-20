@@ -2,8 +2,6 @@ create database GDA0022OTAldoVasquez;
 
 use GDA0022OTAldoVasquez;
 
-select * from Usuarios;
-
 -- creacion de tablas
 create table Productos(
 	idProductos int identity(1, 1), 
@@ -509,6 +507,12 @@ begin
 
 	select * from Productos where idProductos = @idProductos;
 end; 
+
+create or alter proc p_obtenerProductosActivos
+as
+begin
+	select * from Productos where Estados_idEstados = 1;
+end;
 
 create or alter proc p_insertarProductos
     @categoriaProductos_idCategoriaProductos int,

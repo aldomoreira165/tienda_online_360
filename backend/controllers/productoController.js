@@ -36,6 +36,22 @@ const obtenerProductoId = async (req, res) => {
   }
 };
 
+const obtenerProductosActivos = async (req, res) => {
+  try {
+    const [results, _] = await sequelize.query(`EXEC p_obtenerProductosActivos`);
+
+    res.status(200).json({
+      estado: "exito",
+      data: results,
+    });
+  } catch (error) {
+    res.status(400).json({
+      estado: "error",
+      mensaje: error.message,
+    });
+  }
+};
+
 const crearProducto = async (req, res) => {
   const {
     categoria_id,
@@ -143,6 +159,7 @@ const actualizarProducto = async (req, res) => {
 module.exports = {
   obtenerProductos,
   obtenerProductoId,
+  obtenerProductosActivos,
   crearProducto,
   actualizarProducto,
 };

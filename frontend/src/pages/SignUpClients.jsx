@@ -1,33 +1,75 @@
-import React from "react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import axios from "axios";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
-import Select from "@mui/material/Select";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
 import TextField from "@mui/material/TextField";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
-import AppBarBack from "./../components/AppBarBack";
-import AlertMessage from "./../components/AlertMessage";
-import { Typography } from "@mui/material";
-import axios from "axios";
+import Typography from "@mui/material/Typography";
+import AppBarBack from "../components/AppBarBack";
+import AlertMessage from "../components/AlertMessage";
 
 export default function SignUp() {
-  const [rol, setRol] = React.useState("");
-  const [email, setEmail] = React.useState("");
-  const [nombre, setNombre] = React.useState("");
-  const [contraseña, setContraseña] = React.useState("");
-  const [telefono, setTelefono] = React.useState("");
-  const [fechaNacimiento, setFechaNacimiento] = React.useState("");
-  const [razonSocial, setRazonSocial] = React.useState("");
-  const [nombreComercial, setNombreComercial] = React.useState("");
-  const [direccionEntrega, setDireccionEntrega] = React.useState("");
-  const [alertMessage, setAlertMessage] = React.useState("");
-  const [alertSeverity, setAlertSeverity] = React.useState("success");
-  const [openAlert, setOpenAlert] = React.useState(false);
+  const [email, setEmail] = useState("");
+  const [nombre, setNombre] = useState("");
+  const [contraseña, setContraseña] = useState("");
+  const [telefono, setTelefono] = useState("");
+  const [fechaNacimiento, setFechaNacimiento] = useState("");
+  const [razonSocial, setRazonSocial] = useState("");
+  const [nombreComercial, setNombreComercial] = useState("");
+  const [direccionEntrega, setDireccionEntrega] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertSeverity, setAlertSeverity] = useState("success");
+  const [openAlert, setOpenAlert] = useState(false);
 
-  const handleSubmit = async () => {
+  // esquema de validacion de formulario
+  const schema = yup.object().shape({
+    email: yup
+      .string()
+      .email("Correo electrónico no válido")
+      .max(50, "El correo electrónico no debe tener más de 50 caracteres")
+      .required("Correo electrónico requerido"),
+    name: yup
+      .string()
+      .required("El nombre es requerido"),
+    password: yup
+      .string()
+      .min(4, "La contraseña debe tener al menos 4 caracteres")
+      .max(20, "La contraseña no debe tener más de 20 caracteres")
+      .required("La contraseña es requerida"),
+    phone: yup
+      .string()
+      .max(8, "El teléfono debe tener 8 dígitos")
+      .required("El teléfono es requerido"),
+    birthdate: yup
+      .date()
+      .required("La fecha de nacimiento es requerida"),
+    companyName: yup
+      .string()
+      .max(245, "La razón social no debe tener más de 245 caracteres")
+      .required("La razón social es requerida"),
+    tradeName: yup
+      .string()
+      .max(100, "El nombre comercial no debe tener más de 100 caracteres")  
+      .required("El nombre comercial es requerido"),
+    deliveryAdress: yup
+      .string()
+      .max(100, "La dirección de entrega no debe tener más de 100 caracteres")
+      .required("La dirección de entrega es requerida"),
+  });
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
+  });
+
+  const onSubmit = async () => {
     try {
       let data = {
         estados_idEstados: 1,
@@ -36,29 +78,18 @@ export default function SignUp() {
         password: contraseña,
         telefono: telefono,
         fecha_nacimiento: fechaNacimiento,
+        razon_social: razonSocial,
+        nombre_comercial: nombreComercial,
+        direccion_entrega: direccionEntrega,
       };
 
-      if (rol === "Cliente") {
-        data = {
-          ...data,
-          razon_social: razonSocial,
-          nombre_comercial: nombreComercial,
-          direccion_entrega: direccionEntrega,
-        };
-      }
 
-      const url =
-        rol === "Operador"
-          ? "http://localhost:3000/api/v1/usuarios/operador"
-          : "http://localhost:3000/api/v1/usuarios/cliente";
-
-      const response = await axios.post(url, data);
+      const response = await axios.post("http://localhost:3000/api/v1/usuarios/cliente", data);
 
       if (response.status === 201 || response.status === 200) {
         setAlertMessage("¡Usuario registrado con éxito!");
         setAlertSeverity("success");
 
-        setRol("");
         setEmail("");
         setNombre("");
         setContraseña("");
@@ -79,10 +110,6 @@ export default function SignUp() {
     } finally {
       setOpenAlert(true);
     }
-  };
-
-  const handleChange = (event) => {
-    setRol(event.target.value);
   };
 
   const handleCloseAlert = () => {
@@ -106,38 +133,30 @@ export default function SignUp() {
       >
         <Box sx={{ width: "100%" }}>
           <Typography variant="h6" component="h1" gutterBottom align="center">
-            Registro de Usuarios/Operadores
+            Registro de Clientes
           </Typography>
-          <Paper elevation={8} sx={{ height: "90%", width: "100%", marginTop: 5 }}>
+          <Paper
+            elevation={8}
+            sx={{ height: "90%", width: "100%", marginTop: 5 }}
+          >
             <Box
               sx={{
                 padding: "3rem",
               }}
             >
-              <FormControl fullWidth sx={{ height: "100%" }}>
-                <InputLabel>Rol</InputLabel>
-                <Select
-                  id="select-rol"
-                  value={rol}
-                  label="Rol"
-                  onChange={handleChange}
-                >
-                  <MenuItem value="Cliente">Cliente</MenuItem>
-                  <MenuItem value="Operador">Operador</MenuItem>
-                </Select>
-
+              <form onSubmit={handleSubmit(onSubmit)}>
                 <Grid container spacing={2}>
                   <Grid item xs={6}>
                     <TextField
                       label="Correo electrónico"
                       variant="outlined"
                       margin="normal"
-                      type="email"
                       value={email}
-                      required
+                      {...register("email")}
                       fullWidth
                       onChange={(e) => setEmail(e.target.value)}
-                      disabled={rol === ""}
+                      error={!!errors.email}
+                      helperText={errors.email?.message}
                     />
                   </Grid>
 
@@ -148,10 +167,12 @@ export default function SignUp() {
                       margin="normal"
                       type="text"
                       value={nombre}
+                      {...register("name")}
                       required
                       fullWidth
                       onChange={(e) => setNombre(e.target.value)}
-                      disabled={rol === ""}
+                      error={!!errors.name}
+                      helperText={errors.name?.message}
                     />
                   </Grid>
                 </Grid>
@@ -163,11 +184,13 @@ export default function SignUp() {
                       variant="outlined"
                       margin="normal"
                       value={contraseña}
+                      {...register("password")}
                       type="password"
                       required
                       fullWidth
                       onChange={(e) => setContraseña(e.target.value)}
-                      disabled={rol === ""}
+                      error={!!errors.password}
+                      helperText={errors.password?.message}
                     />
                   </Grid>
 
@@ -177,11 +200,13 @@ export default function SignUp() {
                       variant="outlined"
                       margin="normal"
                       value={telefono}
+                      {...register("phone")}
                       type="tel"
                       required
                       fullWidth
                       onChange={(e) => setTelefono(e.target.value)}
-                      disabled={rol === ""}
+                      error={!!errors.phone}
+                      helperText={errors.phone?.message}
                     />
                   </Grid>
 
@@ -191,11 +216,13 @@ export default function SignUp() {
                       variant="outlined"
                       margin="normal"
                       value={fechaNacimiento}
+                      {...register("birthdate")}
                       type="date"
                       required
                       fullWidth
                       onChange={(e) => setFechaNacimiento(e.target.value)}
-                      disabled={rol === ""}
+                      error={!!errors.birthdate}
+                      helperText={errors.birthdate?.message}
                     />
                   </Grid>
                 </Grid>
@@ -208,10 +235,12 @@ export default function SignUp() {
                       margin="normal"
                       type="text"
                       value={razonSocial}
+                      {...register("companyName")}
                       required
                       fullWidth
                       onChange={(e) => setRazonSocial(e.target.value)}
-                      disabled={rol === "Operador" || rol === ""}
+                      error={!!errors.companyName}
+                      helperText={errors.companyName?.message}
                     />
                   </Grid>
 
@@ -222,10 +251,12 @@ export default function SignUp() {
                       margin="normal"
                       type="text"
                       value={nombreComercial}
+                      {...register("tradeName")}
                       required
                       fullWidth
                       onChange={(e) => setNombreComercial(e.target.value)}
-                      disabled={rol === "Operador" || rol === ""}
+                      error={!!errors.tradeName}
+                      helperText={errors.tradeName?.message}
                     />
                   </Grid>
                 </Grid>
@@ -236,10 +267,12 @@ export default function SignUp() {
                   margin="normal"
                   type="text"
                   value={direccionEntrega}
+                  {...register("deliveryAdress")}
                   required
                   fullWidth
                   onChange={(e) => setDireccionEntrega(e.target.value)}
-                  disabled={rol === "Operador" || rol === ""}
+                  error={!!errors.deliveryAdress}
+                  helperText={errors.deliveryAdress?.message}
                 />
 
                 <Box sx={{ display: "flex", justifyContent: "center" }}>
@@ -248,24 +281,12 @@ export default function SignUp() {
                     color="success"
                     fullWidth
                     sx={{ marginTop: 2, width: "25%" }}
-                    onClick={handleSubmit}
-                    disabled={
-                      rol === "" ||
-                      email === "" ||
-                      nombre === "" ||
-                      contraseña === "" ||
-                      telefono === "" ||
-                      fechaNacimiento === "" ||
-                      (rol === "Cliente" &&
-                        (razonSocial === "" ||
-                          nombreComercial === "" ||
-                          direccionEntrega === ""))
-                    }
+                    type="submit"
                   >
                     Registrarse
                   </Button>
                 </Box>
-              </FormControl>
+              </form>
             </Box>
           </Paper>
         </Box>

@@ -24,7 +24,8 @@ const login = async (req, res) => {
         // generando objeto usuario para generar token
         const usuarioToken = {
             id: results[0].idUsuarios,
-            rol: results[0].Rol_idRol
+            rol: results[0].Rol_idRol,
+            email: results[0].correo_electronico
         };
         
         const token = await generarToken(usuarioToken);
