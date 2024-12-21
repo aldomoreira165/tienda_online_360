@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 
@@ -19,3 +20,10 @@ export default function AlertMessage({openAlert, closeAlert, alertSeverity, aler
     </Snackbar>
   );
 }
+
+AlertMessage.propTypes = {
+  openAlert: PropTypes.bool.isRequired,
+  closeAlert: PropTypes.func.isRequired,
+  alertSeverity: PropTypes.oneOf(["error", "warning", "info", "success"]).isRequired,
+  alertMessage: PropTypes.string.isRequired,
+};

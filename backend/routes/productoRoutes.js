@@ -2,7 +2,8 @@ const express = require('express');
 
 const { 
     obtenerProductos, 
-    obtenerProductoId, 
+    obtenerProductoId,
+    obtenerProductosActivos, 
     crearProducto, 
     actualizarProducto 
 } = require('../controllers/productoController');
@@ -17,6 +18,10 @@ router
     .route('/')
     .get(obtenerProductos)
     .post(crearProducto)
+
+router
+    .route('/activos')
+    .get(obtenerProductosActivos)
 
 router
     .route('/:id')

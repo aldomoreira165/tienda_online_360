@@ -1,6 +1,12 @@
 const express = require('express');
 
-const { crearUsuarioOperador, crearUsuarioCliente, actualizarUsuario } = require('./../controllers/usuarioController');
+const { 
+    crearUsuarioOperador, 
+    crearUsuarioCliente,
+    actualizarUsuario,
+    obtenerUsuarioId,
+    obtenerUsuarioEmail
+} = require('./../controllers/usuarioController');
 
 const { verificarAuth } = require('./../middlewares/verificarAutenticacion');
 
@@ -16,6 +22,11 @@ router
 
 router
     .route('/:id')
+    .get(verificarAuth, obtenerUsuarioId)
     .put(verificarAuth, actualizarUsuario)
+
+router
+    .route('/email/:email')
+    .get(verificarAuth, obtenerUsuarioEmail)
 
 module.exports = router;

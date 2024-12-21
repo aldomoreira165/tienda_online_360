@@ -6,6 +6,8 @@ const router = express.Router();
 
 const { verificarAuth } = require('./../middlewares/verificarAutenticacion');
 
+router.use(verificarAuth);
+
 router
     .route('/')
     .get(obtenerEstados)
