@@ -59,15 +59,29 @@ function AppBarOperator() {
     setOpenAlert(false);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("idUsuario");
-    localStorage.removeItem("rolUsuario");
-    localStorage.removeItem("emailUsuario");
-    setAlertSeverity("success");
-    setAlertMessage("Cerrando sesión. Redirigiendo...");
-    setOpenAlert(true);
-    setTimeout(() => navigate("/"), 2000);
+  const handleLogout = async () => {
+    try {
+      await axios.delete("http://localhost:3000/api/v1/auth/logout", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("idUsuario");
+      localStorage.removeItem("rolUsuario");
+      localStorage.removeItem("emailUsuario");
+      setAlertSeverity("success");
+      setAlertMessage("Cerrando sesión. Redirigiendo...");
+      setOpenAlert(true);
+      setTimeout(() => navigate("/"), 2000);
+    } catch (error) {
+      setAlertSeverity("error");
+      setAlertMessage(
+        error?.response?.data?.mensaje || "Ocurrió un error al cerrar sesión"
+      );
+      setOpenAlert(true);
+    }
   };
 
   const handleMainClick = () => {
@@ -86,9 +100,20 @@ function AppBarOperator() {
             }}
           >
             <Box sx={{ display: "flex", justifyContent: "center" }}>
-              <img className="logo-nav" src={logo} alt="logo" onClick={handleMainClick}></img>
+              <img
+                className="logo-nav"
+                src={logo}
+                alt="logo"
+                onClick={handleMainClick}
+              ></img>
             </Box>
-            <Box display={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <Box
+              display={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
               <Box>
                 <Typography variant="h6" component="div" sx={{ padding: 1 }}>
                   {usuario.nombre}
