@@ -17,30 +17,36 @@ import AppBarOperator from "./../components/AppBarOperator";
 import AsideBar from "./../components/AsideBar";
 import AlertMessage from "./../components/AlertMessage";
 
+const initialValues = {
+  categoria: "",
+  nombre: "",
+  estado: "",
+};
+
 export default function ModifyCategory() {
   const [categorias, setCategorias] = useState([]);
   const [estados, setEstados] = useState([]);
-  const [nombre, setNombre] = useState("");
-  const [selectedCategoria, setSelectedCategoria] = useState("");
-  const [selectedEstado, setSelectedEstado] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState("success");
   const [openAlert, setOpenAlert] = useState(false);
 
   const schema = yup.object().shape({
-    name: yup
+    nombre: yup
       .string()
       .max(45, "La categoría no debe exceder los 45 caracteres")
       .required("El nombre es requerido"),
+    estado: yup.number().required("El estado es requerido"),
   });
 
   const {
     register,
     handleSubmit,
-    formState: { errors },
     reset,
+    watch,
+    formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
+    defaultValues: initialValues,
   });
 
   // Fetch categorías y estados
@@ -68,7 +74,9 @@ export default function ModifyCategory() {
         },
       });
 
-      const estadosCategoria = response.data.data.filter(cat => cat.idEstados === 1 || cat.idEstados === 2);
+      const estadosCategoria = response.data.data.filter(
+        (cat) => cat.idEstados === 1 || cat.idEstados === 2
+      );
       setEstados(estadosCategoria);
     } catch (error) {
       console.error(error);
@@ -81,11 +89,9 @@ export default function ModifyCategory() {
   }, []);
 
   const handleCategoriaChange = async (idCategoria) => {
-    setSelectedCategoria(idCategoria);
-
     try {
       const response = await axios.get(
-        `http://localhost:3000/api/v1/categorias/${idCategoria}`,
+        `http://localhost:3000/api/v1/categorias/${parseInt(idCategoria, 10)}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -93,31 +99,30 @@ export default function ModifyCategory() {
         }
       );
 
-      console.log(response.data.data[0]);
-      setNombre(response.data.data[0].nombre);
-      setSelectedEstado(response.data.data[0].Estados_idEstados);
+      const categoriaEncontrada = response.data.data[0];
 
       reset({
-        name: response.data.data[0].nombre,
+        nombre: categoriaEncontrada.nombre,
+        estado: categoriaEncontrada.Estados_idEstados,
+        categoria: idCategoria,
       });
     } catch (error) {
       console.error(error);
     }
   };
 
-  const handleEstadoChange = (idEstado) => {
-    setSelectedEstado(idEstado);
-  };
-
   const onSubmit = async (data) => {
     try {
       const dataCategory = {
-        nombre: data.name,
-        estado_id: selectedEstado,
+        nombre: data.nombre,
+        estado_id: data.estado,
       };
 
       const response = await axios.put(
-        `http://localhost:3000/api/v1/categorias/${selectedCategoria}`,
+        `http://localhost:3000/api/v1/categorias/${parseInt(
+          data.categoria,
+          10
+        )}`,
         dataCategory,
         {
           headers: {
@@ -130,10 +135,7 @@ export default function ModifyCategory() {
         setAlertSeverity("success");
         setAlertMessage("Categoría modificada correctamente");
         setOpenAlert(true);
-
-        setNombre("");
-        setSelectedCategoria("");
-        setSelectedEstado("");
+        reset(initialValues);
       }
     } catch (error) {
       setAlertSeverity("error");
@@ -174,10 +176,13 @@ export default function ModifyCategory() {
                 <Paper elevation={4} sx={{ width: "100%", padding: 3 }}>
                   <form onSubmit={handleSubmit(onSubmit)}>
                     <FormControl fullWidth margin="normal">
-                      <InputLabel id="category-label">Categoría</InputLabel>
+                      <InputLabel id="categoria-label">Categoría</InputLabel>
                       <Select
-                        labelId="category-label"
-                        value={selectedCategoria}
+                        id="select-categoria"
+                        labelId="categoria-label"
+                        label="Categoría"
+                        {...register("categoria")}
+                        value={watch("categoria")}
                         onChange={(e) => handleCategoriaChange(e.target.value)}
                       >
                         {categorias.map((categoria) => (
@@ -196,19 +201,20 @@ export default function ModifyCategory() {
                       variant="outlined"
                       margin="normal"
                       fullWidth
-                      value={nombre}
-                      {...register("name")}
-                      onChange={(e) => setNombre(e.target.value)}
-                      error={!!errors.name}
-                      helperText={errors.name?.message}
+                      {...register("nombre")}
+                      value={watch("nombre")}
+                      error={!!errors.nombre}
+                      helperText={errors.nombre?.message}
                     />
 
                     <FormControl fullWidth margin="normal">
-                      <InputLabel id="status-label">Estado</InputLabel>
+                      <InputLabel id="estado-label">Estado</InputLabel>
                       <Select
-                        labelId="status-label"
-                        value={selectedEstado}
-                        onChange={(e) => handleEstadoChange(e.target.value)}
+                        id="select-estado"
+                        labelId="estado-label"
+                        label="Estado"
+                        {...register("estado")}
+                        value={watch("estado")}
                       >
                         {estados.map((estado) => (
                           <MenuItem

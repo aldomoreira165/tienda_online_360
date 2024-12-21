@@ -829,6 +829,8 @@ begin
 end;
 
 select * from Tokens;
+select * from Productos;
+select * from CategoriaProductos;
 -- <fin tokens>
 
 -- creacion de vistas
