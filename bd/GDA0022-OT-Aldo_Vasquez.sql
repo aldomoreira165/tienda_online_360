@@ -218,9 +218,6 @@ end;
 -- <fin cliente>
 
 -- <inicio usuario>
-
-select * from Usuarios;
-
 create or alter proc p_obtenerUsuarioId
 	@idUsuarios int
 as
@@ -262,9 +259,6 @@ begin
 
 	select * from Usuarios where idUsuarios = scope_identity();
 end;
-
-select * from Usuarios;
-select * from Clientes;
 
 create or alter proc p_insertarUsuarioCliente
     @estados_idEstados int,
@@ -806,7 +800,6 @@ select * from Orden;
 -- <fin orden>
 
 -- <inicio tokens>
-
 create or alter proc p_insertarToken
 	@token varchar(512)
 as
