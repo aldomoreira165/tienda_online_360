@@ -18,14 +18,6 @@ import AppBarOperator from "./../components/AppBarOperator";
 import AsideBar from "./../components/AsideBar";
 
 function AddProduct() {
-  const [nombre, setNombre] = useState("");
-  const [marca, setMarca] = useState("");
-  const [categoria, setCategoria] = useState("");
-  const [stock, setStock] = useState("");
-  const [codigo, setCodigo] = useState("");
-  const [estado, setEstado] = useState("");
-  const [precio, setPrecio] = useState("");
-  const [foto, setFoto] = useState("");
   const [categorias, setCategorias] = useState([]);
   const [estados, setEstados] = useState([]);
   const [alertMessage, setAlertMessage] = useState("");
@@ -34,91 +26,112 @@ function AddProduct() {
 
   // esquema de validacion de formulario
   const schema = yup.object().shape({
-    name: yup.string().max(45, "Máximo 45 caracteres").required("Requerido"),
-    brand: yup.string().max(45, "Máximo 45 caracteres").required("Requerido"),
+    nombre: yup
+      .string()
+      .max(45, "Máximo 45 caracteres")
+      .required("El nombre es requerido"),
+    marca: yup
+      .string()
+      .max(45, "Máximo 45 caracteres")
+      .required("La marca es requerida"),
     stock: yup
       .number()
       .positive("El stock debe ser positivo")
-      .required("Requerido"),
-    code: yup.string().max(45, "Máximo 45 caracteres").required("Requerido"),
-    price: yup
+      .required("El stock es requerido"),
+    codigo: yup
+      .string()
+      .max(45, "Máximo 45 caracteres")
+      .required("El código es requerido"),
+    precio: yup
       .number()
       .positive("El precio debe ser positivo")
-      .required("Requerido"),
-    photo: yup.string().max(255, "Máximo 255 caracteres").required("Requerido"),
+      .required("El precio es requerido"),
+    foto: yup.string().max(255, "Máximo 255 caracteres").required("Requerido"),
+    categoria: yup.number().required("Categoría es requerida"),
+    estado: yup.number().required("El estado es requerido"),
   });
+
+  const initialValues = {
+    nombre: "",
+    marca: "",
+    stock: "",
+    codigo: "",
+    precio: "",
+    foto: "",
+    categoria: "",
+    estado: "",
+  };
 
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
+    defaultValues: initialValues,
   });
 
+  const fetchCategorias = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:3000/api/v1/categorias",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      setCategorias(response.data.data);
+    } catch (error) {
+      console.warn(error);
+    }
+  };
+
+  const fetchEstados = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/api/v1/estados", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      const estadosProductos = response.data.data.filter(
+        (estados) =>
+          estados.nombre === "Activo" || estados.nombre === "Inactivo"
+      );
+      setEstados(estadosProductos);
+    } catch (error) {
+      console.warn(error);
+    }
+  };
+
   useEffect(() => {
-    const fetchCategorias = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:3000/api/v1/categorias",
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-
-        setCategorias(response.data.data);
-      } catch (error) {
-        console.warn(error);
-      }
-    };
-
-    const fetchEstados = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:3000/api/v1/estados",
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-
-        const estadosProductos = response.data.data.filter(
-          (estados) =>
-            estados.nombre === "Activo" || estados.nombre === "Inactivo"
-        );
-        setEstados(estadosProductos);
-      } catch (error) {
-        console.warn(error);
-      }
-    };
-
     fetchCategorias();
     fetchEstados();
   }, []);
 
-  const onSubmit = async () => {
+  const onSubmit = async (data) => {
     try {
       const idUsuario = localStorage.getItem("idUsuario");
 
-      let data = {
-        nombre: nombre,
-        marca: marca,
-        categoria_id: parseInt(categoria, 10),
-        stock: parseInt(stock, 10),
-        codigo: codigo,
-        estados_id: parseInt(estado, 10),
-        precio: parseFloat(precio),
-        foto: foto,
+      let dataProduct = {
+        nombre: data.nombre,
+        marca: data.marca,
+        categoria_id: parseInt(data.categoria, 10),
+        stock: parseInt(data.stock, 10),
+        codigo: data.codigo,
+        estados_id: parseInt(data.estado, 10),
+        precio: parseFloat(data.precio, 10),
+        foto: data.foto,
         usuario_id: parseInt(idUsuario, 10),
         fecha_creacion: new Date().toISOString(),
       };
 
       const response = await axios.post(
         "http://localhost:3000/api/v1/productos",
-        data,
+        dataProduct,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -129,14 +142,8 @@ function AddProduct() {
       if (response.status === 201 || response.status === 200) {
         setAlertMessage("¡Producto agregado con éxito!");
         setAlertSeverity("success");
-        setNombre("");
-        setMarca("");
-        setCategoria("");
-        setStock("");
-        setCodigo("");
-        setEstado("");
-        setPrecio("");
-        setFoto("");
+
+        reset(initialValues);
       }
     } catch (error) {
       setAlertMessage(
@@ -145,14 +152,6 @@ function AddProduct() {
       setAlertSeverity("error");
     }
     setOpenAlert(true);
-  };
-
-  const handleChangeCategoria = (event) => {
-    setCategoria(event.target.value);
-  };
-
-  const handleChangeEstado = (event) => {
-    setEstado(event.target.value);
   };
 
   const handleCloseAlert = () => {
@@ -219,11 +218,10 @@ function AddProduct() {
                               type="text"
                               required
                               fullWidth
-                              value={nombre}
-                              {...register("name")}
-                              onChange={(e) => setNombre(e.target.value)}
-                              error={!!errors.name}
-                              helperText={errors.name?.message}
+                              defaultValue=""
+                              {...register("nombre")}
+                              error={!!errors.nombre}
+                              helperText={errors.nombre?.message}
                             />
                           </Grid>
 
@@ -235,11 +233,10 @@ function AddProduct() {
                               type="text"
                               required
                               fullWidth
-                              value={marca}
-                              {...register("brand")}
-                              onChange={(e) => setMarca(e.target.value)}
-                              error={!!errors.brand}
-                              helperText={errors.brand?.message}
+                              defaultValue=""
+                              {...register("marca")}
+                              error={!!errors.marca}
+                              helperText={errors.marca?.message}
                             />
                           </Grid>
                         </Grid>
@@ -253,8 +250,9 @@ function AddProduct() {
                               <Select
                                 id="select-categoria"
                                 labelId="categoria-label"
-                                value={categoria}
-                                onChange={handleChangeCategoria}
+                                defaultValue=""
+                                {...register("categoria")}
+                                error={!!errors.categoria}
                               >
                                 {categorias.map((categoria) => (
                                   <MenuItem
@@ -265,6 +263,11 @@ function AddProduct() {
                                   </MenuItem>
                                 ))}
                               </Select>
+                              {errors.categoria && (
+                                <Typography variant="caption" color="error">
+                                  {errors.categoria.message}
+                                </Typography>
+                              )}
                             </FormControl>
                           </Grid>
                           <Grid item xs={4}>
@@ -275,9 +278,8 @@ function AddProduct() {
                               type="number"
                               required
                               fullWidth
-                              value={stock}
+                              defaultValue=""
                               {...register("stock")}
-                              onChange={(e) => setStock(e.target.value)}
                               error={!!errors.stock}
                               helperText={errors.stock?.message}
                             />
@@ -290,11 +292,10 @@ function AddProduct() {
                               type="text"
                               required
                               fullWidth
-                              value={codigo}
-                              {...register("code")}
-                              onChange={(e) => setCodigo(e.target.value)}
-                              error={!!errors.code}
-                              helperText={errors.code?.message}
+                              defaultValue=""
+                              {...register("codigo")}
+                              error={!!errors.codigo}
+                              helperText={errors.codigo?.message}
                             />
                           </Grid>
                         </Grid>
@@ -311,11 +312,12 @@ function AddProduct() {
                               <InputLabel>Estado</InputLabel>
                               <Select
                                 id="select-estado"
-                                value={estado}
-                                label="Estado"
-                                onChange={handleChangeEstado}
+                                labelId="estado-label"
                                 fullWidth
                                 required
+                                defaultValue=""
+                                {...register("estado")}
+                                error={!!errors.categoria}
                               >
                                 {estados.map((estado) => (
                                   <MenuItem
@@ -326,6 +328,11 @@ function AddProduct() {
                                   </MenuItem>
                                 ))}
                               </Select>
+                              {errors.estado && (
+                                <Typography variant="caption" color="error">
+                                  {errors.estado.message}
+                                </Typography>
+                              )}
                             </Box>
                           </Grid>
                           <Grid item xs={6}>
@@ -336,11 +343,10 @@ function AddProduct() {
                               type="number"
                               required
                               fullWidth
-                              value={precio}
-                              {...register("price")}
-                              onChange={(e) => setPrecio(e.target.value)}
-                              error={!!errors.price}
-                              helperText={errors.price?.message}
+                              defaultValue=""
+                              {...register("precio")}
+                              error={!!errors.precio}
+                              helperText={errors.precio?.message}
                             />
                           </Grid>
                         </Grid>
@@ -352,11 +358,10 @@ function AddProduct() {
                           type="text"
                           required
                           fullWidth
-                          value={foto}
-                          {...register("photo")}
-                          onChange={(e) => setFoto(e.target.value)}
-                          error={!!errors.photo}
-                          helperText={errors.photo?.message}
+                          defaultValue=""
+                          {...register("foto")}
+                          error={!!errors.foto}
+                          helperText={errors.foto?.message}
                         />
 
                         <Box sx={{ display: "flex", justifyContent: "center" }}>
