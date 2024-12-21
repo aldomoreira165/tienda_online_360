@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useEffect, useState } from "react";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
@@ -14,17 +14,42 @@ import MenuItem from "@mui/material/MenuItem";
 import logo from "./../assets/images/tiendita_logo.jpg";
 import AlertMessage from "./AlertMessage";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const pages = ["Productos", "Carrito", "Historial de Compras"];
 const settings = ["Perfil", "Logout"];
 
 function AppBarClient() {
-  const [anchorElNav, setAnchorElNav] = React.useState(null);
-  const [anchorElUser, setAnchorElUser] = React.useState(null);
-  const [alertMessage, setAlertMessage] = React.useState("");
-  const [alertSeverity, setAlertSeverity] = React.useState("success");
-  const [openAlert, setOpenAlert] = React.useState(false);
+  const [anchorElNav, setAnchorElNav] = useState(null);
+  const [anchorElUser, setAnchorElUser] = useState(null);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertSeverity, setAlertSeverity] = useState("success");
+  const [openAlert, setOpenAlert] = useState(false);
+  const [usuario, setUsuario] = useState({});
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const idUsuario = localStorage.getItem("idUsuario");
+
+        const response = await axios.get(
+          `http://localhost:3000/api/v1/usuarios/${idUsuario}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        
+        setUsuario(response.data.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -45,22 +70,40 @@ function AppBarClient() {
     setOpenAlert(false);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("idUsuario");
-    localStorage.removeItem("rolUsuario");
-    setAlertSeverity("success");
-    setAlertMessage("Cerrando sesión. Redirigiendo...");
-    setOpenAlert(true);
-    setTimeout(() => navigate("/"), 2000);
+  const handleMainClick = () => {
+    navigate("/client");  
+  };
+
+  const handleLogout = async () => {
+    try {
+      await axios.delete("http://localhost:3000/api/v1/auth/logout", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("idUsuario");
+      localStorage.removeItem("rolUsuario");
+      localStorage.removeItem("emailUsuario");
+      setAlertSeverity("success");
+      setAlertMessage("Cerrando sesión. Redirigiendo...");
+      setOpenAlert(true);
+      setTimeout(() => navigate("/"), 2000);
+    }
+    catch (error) {
+      setAlertSeverity("error");
+      setAlertMessage(error?.response?.data?.mensaje || "Ocurrió un error al cerrar sesión"); 
+      setOpenAlert(true);
+    }
   };
 
   return (
     <AppBar position="fixed">
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          <Box sx={{ display: "flex", justifyContent: "center" }}>
-            <img className="logo-nav" src={logo} alt="logo"></img>
+          <Box sx={{ display: "flex", justifyContent: "center"}}>
+            <img className="logo-nav" src={logo} alt="logo" onClick={handleMainClick}></img>
           </Box>
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
             <IconButton
@@ -106,6 +149,11 @@ function AppBarClient() {
                 {page}
               </Button>
             ))}
+          </Box>
+          <Box>
+            <Typography variant="h6" component="div" sx={{ padding: 1 }}>
+              {usuario.nombre}
+            </Typography>
           </Box>
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open settings">

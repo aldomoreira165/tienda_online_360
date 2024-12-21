@@ -1,47 +1,63 @@
-import React from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-import {
-  Paper,
-  TextField,
-  Box,
-  Button,
-  Grid,
-  CssBaseline,
-} from "@mui/material";
-import Slider from "react-slick";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
 import axios from "axios";
-import logo from "./../assets/images/tiendita_logo.jpg";
+import Paper from "@mui/material/Paper";
+import TextField from "@mui/material/TextField";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Grid from "@mui/material/Grid";
+import Slider from "react-slick";
 import AlertMessage from "./../components/AlertMessage";
+import logo from "./../assets/images/tiendita_logo.jpg";
 import slide1 from "./../assets/images/slide1.jpg";
 import slide2 from "./../assets/images/slide2.jpg";
 import slide3 from "./../assets/images/slide3.jpg";
-import "./../assets/css/main.css";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-
-const photos = [{ url: slide1 }, { url: slide2 }, { url: slide3 }];
+import "./../assets/css/main.css";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [alertMessage, setAlertMessage] = React.useState("");
-  const [alertSeverity, setAlertSeverity] = React.useState("success");
-  const [openAlert, setOpenAlert] = React.useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertSeverity, setAlertSeverity] = useState("success");
+  const [openAlert, setOpenAlert] = useState(false);
+
+  // esquema de validación de formulario
+  const schema = yup.object().shape({
+    email: yup
+      .string()
+      .email("Correo electrónico no válido")
+      .required("Correo electrónico requerido"),
+    password: yup
+      .string()
+      .required("Contraseña requerida"),
+  });
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
+  });
+
   const navigate = useNavigate();
 
-  const handleSubmit = async () => {
+  const photos = [{ url: slide1 }, { url: slide2 }, { url: slide3 }];
+
+  const onSubmit = async (data) => {
     try {
       const response = await axios.post(
         "http://localhost:3000/api/v1/auth/login",
         {
-          correo_electronico: email,
-          contraseña: password,
+          correo_electronico: data.email,
+          contraseña: data.password,
         }
       );
 
-      const { id, rol, estado } = response.data.data;
+      const { id, rol, estado, correo } = response.data.data;
       const token = response.data.token;
 
       // seteando alerta
@@ -54,11 +70,13 @@ export default function Login() {
         localStorage.setItem("token", token);
         localStorage.setItem("idUsuario", id);
         localStorage.setItem("rolUsuario", rol);
+        localStorage.setItem("emailUsuario", correo);
       } else if (rol === 2 && estado === 1) {
         setTimeout(() => navigate("/operator"), 2000);
         localStorage.setItem("token", token);
         localStorage.setItem("idUsuario", id);
         localStorage.setItem("rolUsuario", rol);
+        localStorage.setItem("emailUsuario", correo);
       } else {
         setAlertSeverity("warning");
         setAlertMessage("No se reconoce el rol del usuario.");
@@ -68,22 +86,22 @@ export default function Login() {
     } catch (error) {
       setAlertSeverity("error");
       setAlertMessage(
-        error.response?.data?.message ||
+        error.response?.data?.mensaje ||
           "Error al iniciar sesión. Verifica tus credenciales."
       );
       setOpenAlert(true);
-      console.log(error);
     }
   };
 
   const handleSignUpClick = () => {
-    navigate("/signup");
+    navigate("/signup/clients");
   };
 
   const handleCloseAlert = () => {
     setOpenAlert(false);
   };
 
+  // configs para el slider de imagenes
   const settings = {
     dots: false,
     infinite: true,
@@ -95,11 +113,10 @@ export default function Login() {
   };
 
   return (
-    <Box sx={{ flexGrow: 1, height: "100vh" }}>
-      <CssBaseline />
+    <Box sx={{ flexGrow: 1, height: "100vh", overflow: "hidden" }}>
       <Grid container sx={{ height: "100%" }}>
-        <Grid item xs={7}>
-          <Box sx={{ height: "100%" }}>
+        <Grid item xs={7} sx={{ height: "100%" }}>
+          <Box sx={{ height: "100%", width: "100%" }}>
             <Slider {...settings}>
               {photos.map((photo, index) => (
                 <Box
@@ -116,7 +133,7 @@ export default function Login() {
           </Box>
         </Grid>
 
-        <Grid item xs={5}>
+        <Grid item xs={5} sx={{ height: "100%" }}>
           <Box
             sx={{
               display: "flex",
@@ -133,34 +150,41 @@ export default function Login() {
                 <img className="logo" src={logo} alt="logo"></img>
               </Box>
 
-              <TextField
-                label="Correo electrónico"
-                variant="outlined"
-                margin="normal"
-                required
-                fullWidth
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-              <TextField
-                label="Contraseña"
-                variant="outlined"
-                margin="normal"
-                type="password"
-                required
-                fullWidth
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <Button
-                variant="contained"
-                color="success"
-                fullWidth
-                sx={{ marginTop: 2 }}
-                onClick={handleSubmit}
-              >
-                Iniciar Sesión
-              </Button>
+              <form onSubmit={handleSubmit(onSubmit)}>
+                <TextField
+                  label="Correo electrónico"
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  {...register("email")}
+                  error={!!errors.email}
+                  helperText={errors.email?.message}
+                />
+
+                <TextField
+                  label="Contraseña"
+                  variant="outlined"
+                  margin="normal"
+                  type="password"
+                  required
+                  fullWidth
+                  {...register("password")}
+                  error={!!errors.password}
+                  helperText={errors.password?.message}
+                />
+
+                <Button
+                  variant="contained"
+                  color="success"
+                  fullWidth
+                  sx={{ marginTop: 2 }}
+                  type="submit"
+                >
+                  Iniciar Sesión
+                </Button>
+              </form>
+
               <Button
                 variant="contained"
                 color="primary"

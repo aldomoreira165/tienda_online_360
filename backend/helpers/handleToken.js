@@ -6,11 +6,12 @@ const generarToken = async(user) => {
     return jwt.sign(
         {
             id: user.id,
-            rol: user.rol
+            rol: user.rol,
+            email: user.email
         },
         process.env.JWT_SECRET,
         {
-            expiresIn: '24h'
+            expiresIn: process.env.JWT_EXPIRES_IN
         }
     )
 };

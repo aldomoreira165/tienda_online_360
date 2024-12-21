@@ -13,7 +13,7 @@ export default function ProductsCatalog() {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(
-          "http://localhost:3000/api/v1/productos",
+          "http://localhost:3000/api/v1/productos/activos",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -21,8 +21,7 @@ export default function ProductsCatalog() {
           }
         );
 
-        const activeProducts = response.data.data.filter(product => product.Estados_idEstados === 1);
-        setProducts(activeProducts);
+        setProducts(response.data.data);
       } catch (error) {
         console.error(error);
       }

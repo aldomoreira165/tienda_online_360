@@ -75,6 +75,13 @@ create table Clientes(
 	constraint PK_Clientes primary key (idClientes)
 );
 
+create table Tokens(
+	idToken int identity(1, 1),
+	token  varchar(512) not null,
+	fecha_creacion datetime not null,
+	fecha_expiracion datetime not null
+);
+
 -- creacion de relaciones
 alter table Productos
 add CategoriaProductos_idCategoriaProductos int not null,
@@ -211,6 +218,16 @@ end;
 -- <fin cliente>
 
 -- <inicio usuario>
+
+select * from Usuarios;
+
+create or alter proc p_obtenerUsuarioId
+	@idUsuarios int
+as
+begin
+	select * from Usuarios where idUsuarios = @idUsuarios;
+end;
+
 create or alter proc p_obtenerUsuarioEmail
 	@correo_electronico varchar(50)
 as
@@ -498,6 +515,12 @@ begin
 	select * from Productos where idProductos = @idProductos;
 end; 
 
+create or alter proc p_obtenerProductosActivos
+as
+begin
+	select * from Productos where Estados_idEstados = 1;
+end;
+
 create or alter proc p_insertarProductos
     @categoriaProductos_idCategoriaProductos int,
     @usuarios_idUsuarios int,
@@ -781,6 +804,34 @@ end;
 select * from Orden;
 
 -- <fin orden>
+
+-- <inicio tokens>
+
+create or alter proc p_insertarToken
+	@token varchar(512)
+as
+begin
+	insert into Tokens (token) values (@token);
+end;
+
+create or alter proc p_eliminarToken
+	@token varchar(512)
+as
+begin
+	delete from Tokens where token = @token;
+end;
+
+create or alter proc p_obtenerToken
+	@token varchar(512)
+as
+begin
+	select * from Tokens where token = @token;
+end;
+
+select * from Tokens;
+select * from Productos;
+select * from CategoriaProductos;
+-- <fin tokens>
 
 -- creacion de vistas
 

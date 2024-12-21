@@ -1,3 +1,5 @@
+const dotenv = require("dotenv");
+dotenv.config({path: "./../.env"});
 const sequelize = require("../config/db");
 const { compararContraseña } = require('./../helpers/handleBcrypt');
 const {  generarToken } = require('./../helpers/handleToken')
@@ -10,7 +12,10 @@ const login = async (req, res) => {
         );
 
         if (results.length === 0) {
-            throw new Error("Usuario no encontrado");
+            return res.status(400).json({
+                estado: "error",
+                mensaje: "Usuario no encontrado"
+            });
         }
 
         const contraseñaUsuario = results[0].password;
@@ -18,17 +23,22 @@ const login = async (req, res) => {
         const comparacion = await compararContraseña(contraseña, contraseñaUsuario);
 
         if (!comparacion) {
-            throw new Error("Contraseña incorrecta");
+            return res.status(400).json({
+                estado: "error",
+                mensaje: "Contraseña incorrecta"
+            });
         }
 
         // generando objeto usuario para generar token
         const usuarioToken = {
             id: results[0].idUsuarios,
-            rol: results[0].Rol_idRol
+            rol: results[0].Rol_idRol,
+            email: results[0].correo_electronico
         };
         
         const token = await generarToken(usuarioToken);
-        console.log(token);
+        
+        await insertarToken(token);
 
         res.status(200).json({
             estado: "exito",
@@ -54,6 +64,35 @@ const login = async (req, res) => {
     }
 };
 
+const logout = async (req, res) => {
+    try {
+        const token = req.headers.authorization.split(' ').pop();
+        await sequelize.query(
+            `EXEC p_eliminarToken @token = '${token}'`
+        );
+        res.status(200).json({
+            estado: "exito",
+            mensaje: "Sesión cerrada correctamente"
+        });
+    } catch (error) {
+        res.status(400).json({
+            estado: "error",
+            mensaje: error.message
+        });
+    }
+};
+
+const insertarToken = async (token) => {
+    try {
+        await sequelize.query(
+            `EXEC p_insertarToken @token = '${token}'`
+        );
+    } catch (error) {
+        throw new Error("Error al insertar el token en la base de datos");
+    }
+}
+
 module.exports = {
-    login
+    login,
+    logout
 };
