@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from './pages/Login';
-import SignUpClients from "./pages/SignUpClients";
+import SignUp from "./pages/SignUp";
 import ClientDashboard from "./pages/ClientDashboard";
 import OperatorDashboard from "./pages/OperatorDashboard";
 import AddProduct from "./pages/AddProduct";
@@ -13,7 +13,7 @@ export default function App() {
         <BrowserRouter>
             <Routes>
                 <Route path="/" element={<Login/>}/>
-                <Route path="/signup/clients" element={<SignUpClients/>}/>
+                <Route path="/signup" element={<SignUp/>}/>
                 <Route path="/client" element={<ClientDashboard/>}/>
                 <Route path="/operator" element={<OperatorDashboard/>}/>
                 <Route path="/operator/product/add" element={<AddProduct/>}/>

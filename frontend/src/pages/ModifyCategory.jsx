@@ -181,6 +181,7 @@ export default function ModifyCategory() {
                         id="select-categoria"
                         labelId="categoria-label"
                         label="Categoría"
+                        required
                         {...register("categoria")}
                         value={watch("categoria")}
                         onChange={(e) => handleCategoriaChange(e.target.value)}
