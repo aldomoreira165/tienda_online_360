@@ -2,8 +2,6 @@ create database GDA0022OTAldoVasquez;
 
 use GDA0022OTAldoVasquez;
 
-select * from Productos;
-
 -- creacion de tablas
 create table Productos(
 	idProductos int identity(1, 1), 

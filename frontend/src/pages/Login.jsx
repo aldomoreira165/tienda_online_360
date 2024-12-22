@@ -94,7 +94,7 @@ export default function Login() {
   };
 
   const handleSignUpClick = () => {
-    navigate("/signup/clients");
+    navigate("/signup");
   };
 
   const handleCloseAlert = () => {
