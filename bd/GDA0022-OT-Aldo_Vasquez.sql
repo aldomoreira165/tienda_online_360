@@ -2,6 +2,8 @@ create database GDA0022OTAldoVasquez;
 
 use GDA0022OTAldoVasquez;
 
+select * from Productos;
+
 -- creacion de tablas
 create table Productos(
 	idProductos int identity(1, 1), 
@@ -232,14 +234,16 @@ begin
 	select * from Usuarios where correo_electronico = @correo_electronico;
 end;
 
-create or alter proc p_insertarUsuarioOperador
+create or alter proc p_insertarUsuario
+	@rol_idRol int,
 	@estados_idEstados int,
 	@correo_electronico varchar(50),
 	@nombre_completo varchar(100),
 	@password varchar(100),
 	@telefono varchar(45),
-	@fecha_nacimiento date
-as
+	@fecha_nacimiento date,
+	@clientes_idClientes int = null
+as	
 begin
 	if not exists (select 1 from Estados where idEstados = @estados_idEstados)
 	begin
@@ -255,91 +259,31 @@ begin
 		(Rol_idRol, Estados_idEstados, correo_electronico, nombre_completo, 
 		password, telefono, fecha_nacimiento, fecha_creacion, Clientes_idClientes)
 	values
-		(2, @estados_idEstados, @correo_electronico, @nombre_completo, @password, @telefono, @fecha_nacimiento, getdate(), NULL);
+		(@rol_idRol, @estados_idEstados, @correo_electronico, @nombre_completo, @password, @telefono, @fecha_nacimiento, getdate(), @clientes_idClientes);
 
 	select * from Usuarios where idUsuarios = scope_identity();
 end;
 
-create or alter proc p_insertarUsuarioCliente
-    @estados_idEstados int,
-    @correo_electronico varchar(50),
-    @nombre_completo varchar(100),
-    @password varchar(100),
-    @telefono varchar(45),
-    @fecha_nacimiento date, 
-    @razon_social varchar(245),
-    @nombre_comercial varchar(100),
-    @direccion_entrega varchar(100)
-as
-begin
-    begin try
-        begin transaction;
-
-        -- Validando si el estado existe
-        if not exists (select 1 from Estados where idEstados = @estados_idEstados)
-        begin
-            throw 50000, 'El estado proporcionado no existe.', 1;
-        end
-
-		if exists (select 1 from Usuarios where correo_electronico = @correo_electronico)
-		begin	
-			throw 50001, 'El correo electronico ya se encuentra asociado a otro usuario', 1;
-		end;
-
-		-- Insertar en clientes
-        declare @idClientes int;
-        insert into Clientes (razon_social, nombre_comercial, direccion_entrega, telefono, email)
-        values (@razon_social, @nombre_comercial, @direccion_entrega, @telefono, @correo_electronico);
-
-        set @idClientes = scope_identity();
-
-        -- Insertar en Usuarios
-        insert into Usuarios (correo_electronico, nombre_completo, password, telefono, fecha_nacimiento, fecha_creacion, Rol_idRol, Estados_idEstados, Clientes_idClientes)
-        values (@correo_electronico, @nombre_completo, @password, @telefono, @fecha_nacimiento, getdate(), 1, @estados_idEstados, @idClientes);
-
-        commit transaction;
-
-        select * from Usuarios where idUsuarios = scope_identity();
-    end try
-    begin catch
-        rollback transaction;
-
-        declare @ErrorMessage nvarchar(4000);
-        declare @ErrorSeverity int;
-        declare @ErrorState int;
-
-        select 
-            @ErrorMessage = error_message(), 
-            @ErrorSeverity = error_severity(), 
-            @ErrorState = error_state();
-
-        raiserror (@ErrorMessage, @ErrorSeverity, @ErrorState);
-    end catch
-end;
-
 create or alter proc p_actualizarUsuario
     @idUsuarios int,
-    @cambioCliente bit,
     @estados_idEstados int,
     @correo_electronico varchar(50),
     @nombre_completo varchar(100),
     @password varchar(100),
     @telefono varchar(45),
-    @fecha_nacimiento date
+    @fecha_nacimiento date,
+	@clientes_idClientes int = null
 as
 begin
-    begin try
-        begin transaction;
-
         if not exists (select 1 from Usuarios where idUsuarios = @idUsuarios)
         begin
             throw 50001, 'El usuario especificado no existe.', 1;
-        end
+        end;
 
 		if not exists (select 1 from Estados where idEstados = @estados_idEstados)
         begin
             throw 50002, 'El estado proporcionado no existe.', 1;
-        end
+        end;
 
         update Usuarios
         set
@@ -348,30 +292,36 @@ begin
             nombre_completo = @nombre_completo,
             password = @password,
             telefono = @telefono,
-            fecha_nacimiento = @fecha_nacimiento
+            fecha_nacimiento = @fecha_nacimiento,
+			Clientes_idClientes = @clientes_idClientes
         where idUsuarios = @idUsuarios;
 
-        -- Actualizando tabla Clientes si @cambioCliente es verdadero
-        if @cambioCliente = 1
-        begin
-            update Clientes
-            set
-                email = @correo_electronico,
-                telefono = @telefono
-            where idClientes = (select Clientes_idClientes from Usuarios where idUsuarios = @idUsuarios);
-        end
-
-        commit transaction;
 		select * from Usuarios where idUsuarios = @idUsuarios;
-    end try
-    begin catch
-        rollback transaction;
-        throw;
-    end catch
 end;
 -- <fin usuario>
 
 -- <inicio cliente>
+create or alter proc p_obtenerClientes
+as
+begin
+	select * from Clientes;
+end;
+
+create or alter proc p_insertarCliente
+	@razon_social varchar(245),
+	@nombre_comercial varchar(100),
+	@direccion_entrega varchar(100),
+	@telefono varchar(45),
+	@email varchar(45)
+as
+begin
+	insert into Clientes (razon_social, nombre_comercial, direccion_entrega, telefono, email)
+		values	
+	(@razon_social, @nombre_comercial, @direccion_entrega, @telefono, @email);
+
+	select * from Clientes where idClientes = scope_identity();
+end;
+
 create or alter proc p_actualizarCliente
     @idClientes int,
     @razon_social varchar(245),
@@ -398,7 +348,6 @@ begin
 
 	select * from Clientes where idClientes = @idClientes;
 end;
-
 -- <fin cliente>
 
 -- <inicio categorias>

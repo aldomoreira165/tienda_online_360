@@ -11,8 +11,48 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import AppBarBack from "../components/AppBarBack";
 import AlertMessage from "../components/AlertMessage";
+import PropTypes from "prop-types";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import Pag1 from "../components/Pag1";
+import Pag2 from "../components/Pag2";
+
+function CustomTabPanel(props) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+    </div>
+  );
+}
+
+CustomTabPanel.propTypes = {
+  children: PropTypes.node,
+  index: PropTypes.number.isRequired,
+  value: PropTypes.number.isRequired,
+};
+
+function a11yProps(index) {
+  return {
+    id: `simple-tab-${index}`,
+    "aria-controls": `simple-tabpanel-${index}`,
+  };
+}
 
 export default function SignUp() {
+  const [value, setValue] = useState(0);
+
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+  };
+
   const [email, setEmail] = useState("");
   const [nombre, setNombre] = useState("");
   const [contraseña, setContraseña] = useState("");
@@ -32,9 +72,7 @@ export default function SignUp() {
       .email("Correo electrónico no válido")
       .max(50, "El correo electrónico no debe tener más de 50 caracteres")
       .required("Correo electrónico requerido"),
-    name: yup
-      .string()
-      .required("El nombre es requerido"),
+    name: yup.string().required("El nombre es requerido"),
     password: yup
       .string()
       .min(4, "La contraseña debe tener al menos 4 caracteres")
@@ -44,16 +82,14 @@ export default function SignUp() {
       .string()
       .max(8, "El teléfono debe tener 8 dígitos")
       .required("El teléfono es requerido"),
-    birthdate: yup
-      .date()
-      .required("La fecha de nacimiento es requerida"),
+    birthdate: yup.date().required("La fecha de nacimiento es requerida"),
     companyName: yup
       .string()
       .max(245, "La razón social no debe tener más de 245 caracteres")
       .required("La razón social es requerida"),
     tradeName: yup
       .string()
-      .max(100, "El nombre comercial no debe tener más de 100 caracteres")  
+      .max(100, "El nombre comercial no debe tener más de 100 caracteres")
       .required("El nombre comercial es requerido"),
     deliveryAdress: yup
       .string()
@@ -83,8 +119,10 @@ export default function SignUp() {
         direccion_entrega: direccionEntrega,
       };
 
-
-      const response = await axios.post("http://localhost:3000/api/v1/usuarios/cliente", data);
+      const response = await axios.post(
+        "http://localhost:3000/api/v1/usuarios/cliente",
+        data
+      );
 
       if (response.status === 201 || response.status === 200) {
         setAlertMessage("¡Usuario registrado con éxito!");
@@ -289,6 +327,28 @@ export default function SignUp() {
               </form>
             </Box>
           </Paper>
+        </Box>
+        <Box sx={{ width: "100%" }}>
+          <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+            <Tabs
+              value={value}
+              onChange={handleChange}
+              aria-label="basic tabs example"
+            >
+              <Tab label="Item One" {...a11yProps(0)} />
+              <Tab label="Item Two" {...a11yProps(1)} />
+              <Tab label="Item Three" {...a11yProps(2)} />
+            </Tabs>
+          </Box>
+          <CustomTabPanel value={value} index={0}>
+            <Pag1 />
+          </CustomTabPanel>
+          <CustomTabPanel value={value} index={1}>
+            <Pag2 />
+          </CustomTabPanel>
+          <CustomTabPanel value={value} index={2}>
+            Item Three
+          </CustomTabPanel>
         </Box>
       </Box>
       <AlertMessage

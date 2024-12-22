@@ -155,7 +155,6 @@ export default function Login() {
                   label="Correo electrónico"
                   variant="outlined"
                   margin="normal"
-                  required
                   fullWidth
                   {...register("email")}
                   error={!!errors.email}
@@ -167,7 +166,6 @@ export default function Login() {
                   variant="outlined"
                   margin="normal"
                   type="password"
-                  required
                   fullWidth
                   {...register("password")}
                   error={!!errors.password}

@@ -1,8 +1,7 @@
 const express = require('express');
 
 const { 
-    crearUsuarioOperador, 
-    crearUsuarioCliente,
+    crearUsuario,
     actualizarUsuario,
     obtenerUsuarioId,
     obtenerUsuarioEmail
@@ -13,12 +12,8 @@ const { verificarAuth } = require('./../middlewares/verificarAutenticacion');
 const router = express.Router();
 
 router
-    .route('/operador')
-    .post(crearUsuarioOperador)
-
-router
-    .route('/cliente')
-    .post(crearUsuarioCliente)
+    .route('/')
+    .post(crearUsuario)
 
 router
     .route('/:id')
