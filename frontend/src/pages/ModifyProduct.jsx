@@ -137,48 +137,10 @@ function ModifyProduct() {
     fetchEstados();
   }, []);
 
-  const onSubmit = async (data) => {
+  const handleChangeProducto = async (productoId) => {
     try {
-      let dataProduct = {
-        nombre: data.nombre,
-        marca: data.marca,
-        categoria_id: parseInt(data.categoria, 10),
-        stock: parseInt(data.stock, 10),
-        codigo: data.codigo,
-        estados_id: parseInt(data.estado, 10),
-        precio: parseFloat(data.precio, 10),
-        foto: data.foto,
-      };
-      
-      const response = await axios.put(
-        `http://localhost:3000/api/v1/productos/${parseInt(data.producto, 10)}`,
-        dataProduct,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-
-      if (response.status === 201 || response.status === 200) {
-        setAlertMessage("¡Producto actualizado con éxito!");
-        setAlertSeverity("success");
-        reset(initialValues);
-      }
-    } catch (error) {
-      setAlertMessage(
-        error?.response?.data?.mensaje || "Error al actualizar producto"
-      );
-      setAlertSeverity("error");
-    }
-    setOpenAlert(true);
-  };
-
-  const handleChangeProducto = async (event) => {
-    try {
-      const productoId = event.target.value;
       const response = await axios.get(
-        `http://localhost:3000/api/v1/productos/${productoId}`,
+        `http://localhost:3000/api/v1/productos/${parseInt(productoId, 10)}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -203,6 +165,43 @@ function ModifyProduct() {
     } catch (error) {
       console.warn(error);
     }
+  };
+
+  const onSubmit = async (data) => {
+    try {
+      let dataProduct = {
+        nombre: data.nombre,
+        marca: data.marca,
+        categoria_id: parseInt(data.categoria, 10),
+        stock: parseInt(data.stock, 10),
+        codigo: data.codigo,
+        estados_id: parseInt(data.estado, 10),
+        precio: parseFloat(data.precio, 10),
+        foto: data.foto,
+      };
+
+      const response = await axios.put(
+        `http://localhost:3000/api/v1/productos/${parseInt(data.producto, 10)}`,
+        dataProduct,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (response.status === 201 || response.status === 200) {
+        setAlertMessage("¡Producto actualizado con éxito!");
+        setAlertSeverity("success");
+        reset(initialValues);
+      }
+    } catch (error) {
+      setAlertMessage(
+        error?.response?.data?.mensaje || "Error al actualizar producto"
+      );
+      setAlertSeverity("error");
+    }
+    setOpenAlert(true);
   };
 
   const handleCloseAlert = () => {
@@ -264,7 +263,9 @@ function ModifyProduct() {
                           label="Producto"
                           fullWidth
                           required
-                          onChange={handleChangeProducto}
+                          {...register("producto")}
+                          value={watch("producto")}
+                          onChange={(e) => handleChangeProducto(e.target.value)}
                         >
                           {productos.map((producto) => (
                             <MenuItem
@@ -369,7 +370,7 @@ function ModifyProduct() {
                       <Grid container spacing={2}>
                         <Grid item xs={6}>
                           <FormControl fullWidth margin="normal">
-                            <InputLabel id="estado-label" >Estado</InputLabel>
+                            <InputLabel id="estado-label">Estado</InputLabel>
                             <Select
                               id="select-estado"
                               labelId="estado-label"
@@ -401,7 +402,7 @@ function ModifyProduct() {
                             label="Precio"
                             variant="outlined"
                             margin="normal"
-                            type="number"                           
+                            type="number"
                             fullWidth
                             {...register("precio")}
                             value={watch("precio")}

@@ -1,15 +1,22 @@
 const express = require('express');
 
-const { actualizarCliente } = require('./../controllers/clienteController');
+const { 
+    actualizarCliente, 
+    crearCliente, 
+    obtenerClientes 
+} = require('./../controllers/clienteController');
 
 const { verificarAuth } = require('./../middlewares/verificarAutenticacion');
 
 const router = express.Router();
 
-router.use(verificarAuth);
+router
+    .route('/')
+    .get(obtenerClientes)
+    .post(crearCliente);
 
 router
     .route('/:id')
-    .put(actualizarCliente)
+    .put(verificarAuth, actualizarCliente)
 
 module.exports = router;
