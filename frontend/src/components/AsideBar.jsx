@@ -1,10 +1,11 @@
-import * as React from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ListSubheader from "@mui/material/ListSubheader";
 import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
-import StyleIcon from '@mui/icons-material/Style';
+import StyleIcon from "@mui/icons-material/Style";
+import PersonIcon from '@mui/icons-material/Person';
 import ListItemText from "@mui/material/ListItemText";
 import Collapse from "@mui/material/Collapse";
 import ProductionQuantityLimitsIcon from "@mui/icons-material/ProductionQuantityLimits";
@@ -14,8 +15,9 @@ import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 
 export default function AsideBar() {
-  const [openProducts, setOpenProducts] = React.useState(true);
-  const [openCategories, setOpenCategories] = React.useState(true);
+  const [openProducts, setOpenProducts] = useState(true);
+  const [openCategories, setOpenCategories] = useState(true);
+  const [openUsers, setOpenUsers] = useState(true);
   const navigate = useNavigate();
 
   const handleClickProducts = () => {
@@ -24,7 +26,11 @@ export default function AsideBar() {
 
   const handleClickCategories = () => {
     setOpenCategories(!openCategories);
-  }
+  };
+
+  const handleClickUsers = () => {
+    setOpenUsers(!openUsers);
+  };
 
   const handleAddProduct = () => {
     navigate("/operator/product/add");
@@ -40,6 +46,10 @@ export default function AsideBar() {
 
   const handleModifyCategory = () => {
     navigate("/operator/category/modify");
+  };
+
+  const handleAddUser = () => {
+    navigate("/operator/user/add");
   };
 
   return (
@@ -86,6 +96,29 @@ export default function AsideBar() {
       <Collapse in={openCategories} timeout="auto" unmountOnExit>
         <List component="div" disablePadding>
           <ListItemButton sx={{ pl: 4 }} onClick={handleAddCategory}>
+            <ListItemIcon>
+              <AddIcon />
+            </ListItemIcon>
+            <ListItemText primary="Agregar" />
+          </ListItemButton>
+          <ListItemButton sx={{ pl: 4 }} onClick={handleModifyCategory}>
+            <ListItemIcon>
+              <EditIcon />
+            </ListItemIcon>
+            <ListItemText primary="Modificar" />
+          </ListItemButton>
+        </List>
+      </Collapse>
+      <ListItemButton onClick={handleClickUsers}>
+        <ListItemIcon>
+          <PersonIcon />
+        </ListItemIcon>
+        <ListItemText primary="Usuarios" />
+        {openUsers ? <ExpandLess /> : <ExpandMore />}
+      </ListItemButton>
+      <Collapse in={openUsers} timeout="auto" unmountOnExit>
+        <List component="div" disablePadding>
+          <ListItemButton sx={{ pl: 4 }} onClick={handleAddUser}>
             <ListItemIcon>
               <AddIcon />
             </ListItemIcon>

@@ -7,7 +7,6 @@ import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import TextField from "@mui/material/TextField";
 import Grid from "@mui/material/Grid";
-import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import AlertMessage from "../components/AlertMessage";
 
@@ -104,27 +103,21 @@ export default function FormClient() {
       <Box
         sx={{
           flexGrow: 1,
-          height: "75vh",
+          height: "50vh",
           width: "100%",
           padding: "2rem",
-          paddingTop: "0",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
         }}
       >
-        <Box sx={{ width: "100%" }}>
-          <Typography variant="h6" component="h1" gutterBottom align="center">
-            Registro de Clientes
-          </Typography>
+        <Box sx={{ width: "100%", height: "100%" }}>
           <Paper
             elevation={8}
-            sx={{ height: "90%", width: "100%", marginTop: 5 }}
+            sx={{ height: "100%", width: "100%" }}
           >
             <Box
-              sx={{
-                padding: "3rem",
-              }}
+              padding={3}
             >
               <form onSubmit={handleSubmit(onSubmit)}>
                 <Grid container spacing={2}>

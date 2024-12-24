@@ -167,9 +167,24 @@ export default function ModifyCategory() {
           </Grid>
           <Grid item xs={10} sx={{ height: "100%", width: "100%" }}>
             <Box>
-              <Typography variant="h6" align="center" gutterBottom>
-                Modificar categoría
-              </Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: "100%",
+                  marginTop: 6,
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  component="h6"
+                  gutterBottom
+                  align="center"
+                >
+                  Modificar categoría
+                </Typography>
+              </Box>
               <Box
                 sx={{ padding: 4, display: "flex", justifyContent: "center" }}
               >

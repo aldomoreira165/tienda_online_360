@@ -7,6 +7,7 @@ import AddProduct from "./pages/AddProduct";
 import ModifyProduct from "./pages/ModifyProduct";
 import AddCategory from "./pages/AddCategory";
 import ModifyCategory from "./pages/ModifyCategory";
+import AddUser from "./pages/AddUser";
 
 export default function App() {
     return (
@@ -20,6 +21,7 @@ export default function App() {
                 <Route path="/operator/product/modify" element={<ModifyProduct/>}/>
                 <Route path="/operator/category/add" element={<AddCategory/>}/>
                 <Route path="/operator/category/modify" element={<ModifyCategory/>}/>
+                <Route path="/operator/user/add" element={<AddUser/>}/>
             </Routes>
         </BrowserRouter>
     ); 

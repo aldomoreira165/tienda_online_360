@@ -54,9 +54,6 @@ export default function FormUser({ rol }) {
     fecha_nacimiento: yup
       .date()
       .required("La fecha de nacimiento es requerida"),
-    cliente: yup
-      .number("El cliente debe ser un número")
-      .required("El cliente es requerido"),
   });
 
   const {
@@ -127,27 +124,21 @@ export default function FormUser({ rol }) {
       <Box
         sx={{
           flexGrow: 1,
-          height: "75vh",
+          height: "50vh",
           width: "100%",
           padding: "2rem",
-          paddingTop: "0",
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
+          justifyContent: "center",       
         }}
       >
-        <Box sx={{ width: "100%" }}>
-          <Typography variant="h6" component="h1" gutterBottom align="center">
-            Registro de Usuarios
-          </Typography>
+        <Box sx={{ width: "100%", height: "100%" }}>
           <Paper
             elevation={8}
-            sx={{ height: "90%", width: "100%", marginTop: 5 }}
+            sx={{ height: "100%", width: "100%"}}
           >
             <Box
-              sx={{
-                padding: "3rem",
-              }}
+              padding={3}
             >
               <form onSubmit={handleSubmit(onSubmit)}>
                 <Grid container spacing={2}>
@@ -237,7 +228,6 @@ export default function FormUser({ rol }) {
                           labelId="cliente-label"
                           label="Cliente"
                           fullWidth
-                          required
                           value={watch("cliente")}
                           {...register("cliente")}
                           error={!!errors.cliente}
