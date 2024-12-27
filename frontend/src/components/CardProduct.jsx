@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
@@ -7,26 +8,26 @@ import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import Badge from "@mui/material/Badge";
 
-function CardProduct(props) {
+function CardProduct({ foto, nombre, stock }) {
   return (
     <Grid item xs={12} sm={6} md={4}>
       <Card sx={{ maxWidth: 345 }}>
         <CardMedia
           sx={{ height: 140 }}
-          image={props.foto}
-          title={props.nombre}
+          image={foto}
+          title={nombre}
         />
         <CardContent>
           <Typography gutterBottom variant="h5" component="div">
-            {props.stock > 0 ? (
-              props.nombre
+            {stock > 0 ? (
+              nombre
             ) : (
               <Badge
                 badgeContent="Agotado"
                 color="error"
                 sx={{ marginLeft: 1 }}
               >
-                {props.nombre}
+                {nombre}
               </Badge>
             )}
           </Typography>
@@ -42,5 +43,11 @@ function CardProduct(props) {
     </Grid>
   );
 }
+
+CardProduct.propTypes = {
+  foto: PropTypes.string.isRequired,
+  nombre: PropTypes.string.isRequired,
+  stock: PropTypes.number.isRequired,
+};
 
 export default CardProduct;

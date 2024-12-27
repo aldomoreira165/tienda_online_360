@@ -2,6 +2,12 @@ create database GDA0022OTAldoVasquez;
 
 use GDA0022OTAldoVasquez;
 
+select * from Usuarios;
+
+update Usuarios
+set Estados_idEstados = 2
+where idUsuarios = 2020;
+
 -- creacion de tablas
 create table Productos(
 	idProductos int identity(1, 1), 
@@ -213,10 +219,6 @@ begin
 end;
 -- <fin rol>
 
--- <inicio cliente>
-
--- <fin cliente>
-
 -- <inicio usuario>
 create or alter proc p_obtenerUsuarioId
 	@idUsuarios int
@@ -230,6 +232,40 @@ create or alter proc p_obtenerUsuarioEmail
 as
 begin
 	select * from Usuarios where correo_electronico = @correo_electronico;
+end;
+
+create or alter proc p_activarUsuario
+ @idUsuarios int
+as
+begin
+	update Usuarios
+	set Estados_idEstados = 1
+	where idUsuarios = @idUsuarios;
+
+	select * from Usuarios where idUsuarios = @idUsuarios;
+end;
+
+create or alter proc p_inactivarUsuario
+ @idUsuarios int
+as
+begin
+	update Usuarios
+	set Estados_idEstados = 2
+	where idUsuarios = @idUsuarios;
+
+	select * from Usuarios where idUsuarios = @idUsuarios;
+end;
+
+create or alter proc p_obtenerUsuariosActivos
+as
+begin
+	select * from Usuarios where Estados_idEstados = 1;
+end;
+
+create or alter proc p_obtenerUsuariosInactivos
+as 
+begin
+	select * from Usuarios where Estados_idEstados = 2;
 end;
 
 create or alter proc p_insertarUsuario
@@ -299,6 +335,16 @@ end;
 -- <fin usuario>
 
 -- <inicio cliente>
+select * from Clientes;
+
+create or alter proc p_obtenerClienteID
+	@idClientes int
+as
+begin
+	select * from Clientes where idClientes = @idClientes;
+end;
+	
+
 create or alter proc p_obtenerClientes
 as
 begin

@@ -4,7 +4,11 @@ const {
     crearUsuario,
     actualizarUsuario,
     obtenerUsuarioId,
-    obtenerUsuarioEmail
+    obtenerUsuarioEmail,
+    obtenerUsuarioActivo,
+    obtenerUsuarioInactivo,
+    activarUsuario,
+    inactivarUsuario
 } = require('./../controllers/usuarioController');
 
 const { verificarAuth } = require('./../middlewares/verificarAutenticacion');
@@ -15,13 +19,29 @@ router
     .route('/')
     .post(crearUsuario)
 
+    router
+    .route('/activos')
+    .get(verificarAuth, obtenerUsuarioActivo)
+
 router
-    .route('/:id')
-    .get(verificarAuth, obtenerUsuarioId)
-    .put(verificarAuth, actualizarUsuario)
+    .route('/inactivos')
+    .get(verificarAuth, obtenerUsuarioInactivo)
+
+router
+    .route('/activar/:id')
+    .put(verificarAuth, activarUsuario)
+    
+router
+    .route('/inactivar/:id')
+    .put(verificarAuth, inactivarUsuario)
 
 router
     .route('/email/:email')
     .get(verificarAuth, obtenerUsuarioEmail)
 
+router
+    .route('/:id')
+    .get(verificarAuth, obtenerUsuarioId)
+    .put(verificarAuth, actualizarUsuario)
+    
 module.exports = router;

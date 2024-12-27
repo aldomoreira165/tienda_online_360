@@ -5,7 +5,10 @@ import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import StyleIcon from "@mui/icons-material/Style";
-import PersonIcon from '@mui/icons-material/Person';
+import PersonIcon from "@mui/icons-material/Person";
+import EmojiPeopleIcon from '@mui/icons-material/EmojiPeople';
+import ToggleOnIcon from "@mui/icons-material/ToggleOn";
+import ToggleOffIcon from "@mui/icons-material/ToggleOff";
 import ListItemText from "@mui/material/ListItemText";
 import Collapse from "@mui/material/Collapse";
 import ProductionQuantityLimitsIcon from "@mui/icons-material/ProductionQuantityLimits";
@@ -15,9 +18,10 @@ import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 
 export default function AsideBar() {
-  const [openProducts, setOpenProducts] = useState(true);
-  const [openCategories, setOpenCategories] = useState(true);
-  const [openUsers, setOpenUsers] = useState(true);
+  const [openProducts, setOpenProducts] = useState(false);
+  const [openCategories, setOpenCategories] = useState(false);
+  const [openUsers, setOpenUsers] = useState(false);
+  const [openClients, setOpenClients] = useState(false);
   const navigate = useNavigate();
 
   const handleClickProducts = () => {
@@ -30,6 +34,10 @@ export default function AsideBar() {
 
   const handleClickUsers = () => {
     setOpenUsers(!openUsers);
+  };
+
+  const handleClickClients = () => {
+    setOpenClients(!openClients);
   };
 
   const handleAddProduct = () => {
@@ -50,6 +58,22 @@ export default function AsideBar() {
 
   const handleAddUser = () => {
     navigate("/operator/user/add");
+  };
+
+  const handleActiveUser = () => {
+    navigate("/operator/user/active");
+  };
+
+  const handleInactiveUser = () => {
+    navigate("/operator/user/inactive");
+  };
+
+  const handleAddClient = () => {
+    navigate("/operator/client/add");
+  };
+
+  const handleModifyClient = () => {
+    navigate("/operator/client/modify");
   };
 
   return (
@@ -124,7 +148,37 @@ export default function AsideBar() {
             </ListItemIcon>
             <ListItemText primary="Agregar" />
           </ListItemButton>
-          <ListItemButton sx={{ pl: 4 }} onClick={handleModifyCategory}>
+          <ListItemButton sx={{ pl: 4 }} onClick={handleActiveUser}>
+            <ListItemIcon>
+              <ToggleOnIcon />
+            </ListItemIcon>
+            <ListItemText primary="Activar" />
+          </ListItemButton>
+          <ListItemButton sx={{ pl: 4 }} onClick={handleInactiveUser}>
+            <ListItemIcon>
+              <ToggleOffIcon />
+            </ListItemIcon>
+            <ListItemText primary="Desactivar" />
+          </ListItemButton>
+        </List>
+      </Collapse>
+
+      <ListItemButton onClick={handleClickClients}>
+        <ListItemIcon>
+          <EmojiPeopleIcon />
+        </ListItemIcon>
+        <ListItemText primary="Clientes" />
+        {openClients ? <ExpandLess /> : <ExpandMore />}
+      </ListItemButton>
+      <Collapse in={openClients} timeout="auto" unmountOnExit>
+        <List component="div" disablePadding>
+          <ListItemButton sx={{ pl: 4 }} onClick={handleAddClient}>
+            <ListItemIcon>
+              <AddIcon />
+            </ListItemIcon>
+            <ListItemText primary="Agregar" />
+          </ListItemButton>
+          <ListItemButton sx={{ pl: 4 }} onClick={handleModifyClient}>
             <ListItemIcon>
               <EditIcon />
             </ListItemIcon>

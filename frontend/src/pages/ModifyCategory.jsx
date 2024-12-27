@@ -75,7 +75,7 @@ export default function ModifyCategory() {
       });
 
       const estadosCategoria = response.data.data.filter(
-        (cat) => cat.idEstados === 1 || cat.idEstados === 2
+        (cat) => cat.nombre === "Activo" || cat.nombre === "Inactivo"
       );
       setEstados(estadosCategoria);
     } catch (error) {

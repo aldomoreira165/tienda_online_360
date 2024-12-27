@@ -228,6 +228,7 @@ export default function FormUser({ rol }) {
                           labelId="cliente-label"
                           label="Cliente"
                           fullWidth
+                          disabled = {rol === 2 }
                           value={watch("cliente")}
                           {...register("cliente")}
                           error={!!errors.cliente}
