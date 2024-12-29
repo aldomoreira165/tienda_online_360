@@ -16,6 +16,7 @@ import AddClient from "./pages/AddClient";
 import ModifyClient from "./pages/ModifyClient";
 import Cart from "./pages/Cart";
 import ConfirmCart from "./pages/ConfirmCart";
+import HistoryClient from "./pages/HistoryClient";
 
 export default function App() {
     return (
@@ -28,6 +29,7 @@ export default function App() {
                     <Route index element={<ClientDashboard/>}/>
                     <Route path="cart" element={<Cart/>}/>
                     <Route path="cart/confirm" element={<ConfirmCart/>}/>
+                    <Route path="history" element={<HistoryClient/>}/>
                 </Route>
 
                 <Route path="/operator" element={<OperatorLayout />}>

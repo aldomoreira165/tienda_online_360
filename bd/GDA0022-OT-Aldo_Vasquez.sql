@@ -751,6 +751,39 @@ begin
 		o.fecha_creacion desc;
 end;
 
+create or alter proc p_obtenerOrdenesUsuario
+	@idUsuarios int
+as
+begin
+	select 
+    o.idOrden,
+    o.Usuarios_idUsuarios,
+    o.Estados_idEstados,
+	e.nombre as 'estado_nombre',
+    o.fecha_creacion,
+	o.fecha_entrega,
+	o.total_orden,
+    d.Productos_idProductos,
+    d.cantidad,
+    d.subtotal,
+	p.nombre,
+	p.foto,
+	p.precio
+	from 
+		Orden o
+	inner join 
+		OrdenDetalles d on o.idOrden = d.Orden_idOrden
+	inner join 
+		Productos p on p.idProductos = d.Productos_idProductos
+	inner join
+		Estados e on o.Estados_idEstados = e.idEstados
+	where o.Usuarios_idUsuarios = @idUsuarios
+	order by 
+		o.fecha_creacion desc;
+end;
+
+EXEC p_obtenerOrdenesUsuario @idUsuarios = 2024;
+
 create or alter proc p_obtenerOrdenID
 	@idOrden int
 as
@@ -827,10 +860,6 @@ as
 begin
 	select * from Tokens where token = @token;
 end;
-
-select * from Tokens;
-select * from Productos;
-select * from CategoriaProductos;
 -- <fin tokens>
 
 -- creacion de vistas

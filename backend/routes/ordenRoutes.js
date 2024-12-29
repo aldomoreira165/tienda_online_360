@@ -1,6 +1,12 @@
 const express = require('express');
 
-const { crearOrdenConDetalle, obtenerOrdenes, obtenerOrdenId, actualizarOrden  } = require('./../controllers/ordenController');
+const { 
+    crearOrdenConDetalle, 
+    obtenerOrdenes, 
+    obtenerOrdenesUsuario, 
+    obtenerOrdenId, 
+    actualizarOrden  
+} = require('./../controllers/ordenController');
 
 const { verificarAuth } = require('./../middlewares/verificarAutenticacion');
 
@@ -17,5 +23,9 @@ router
     .route('/:id')
     .get(obtenerOrdenId)
     .put(actualizarOrden)
+
+router
+    .route('/usuario/:id')
+    .get(obtenerOrdenesUsuario)
 
 module.exports = router;
