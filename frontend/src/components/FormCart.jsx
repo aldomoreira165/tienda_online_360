@@ -9,23 +9,28 @@ import TextField from "@mui/material/TextField";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 import AlertMessage from "../components/AlertMessage";
+import useCart from "./../hooks/useCart";
+import { useNavigate } from "react-router-dom";
 
 const initialValues = {
-  email: "",
+  correo_electronico: "",
   telefono: "",
-  razon_social: "",
-  nombre_comercial: "",
-  direccion_entrega: "",
+  nombre: "",
+  direccion: "",
+  fecha_entrega: "",
 };
 
-export default function FormClient() {
+export default function FormCart() {
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState("success");
   const [openAlert, setOpenAlert] = useState(false);
+  const navigate = useNavigate();
+
+  const { cart, totalCart, clearCart } = useCart();
 
   // esquema de validacion de formulario
   const schema = yup.object().shape({
-    email: yup
+    correo_electronico: yup
       .string()
       .email("Correo electrónico no válido")
       .max(50, "El correo electrónico no debe tener más de 50 caracteres")
@@ -34,18 +39,15 @@ export default function FormClient() {
       .string()
       .max(8, "El teléfono debe tener 8 dígitos")
       .required("El teléfono es requerido"),
-    razon_social: yup
+    nombre: yup
       .string()
-      .max(245, "La razón social no debe tener más de 245 caracteres")
-      .required("La razón social es requerida"),
-    nombre_comercial: yup
+      .max(100, "El nombre no debe tener más de 100 caracteres")
+      .required("El nombre es requerido"),
+    direccion: yup
       .string()
-      .max(100, "El nombre comercial no debe tener más de 100 caracteres")
-      .required("El nombre comercial es requerido"),
-    direccion_entrega: yup
-      .string()
-      .max(100, "La dirección de entrega no debe tener más de 100 caracteres")
-      .required("La dirección de entrega es requerida"),
+      .max(100, "La dirección no debe tener más de 100 caracteres")
+      .required("La dirección es requerida"),
+    fecha_entrega: yup.date().required("La fecha de entrega es requerida"),
   });
 
   const {
@@ -61,35 +63,61 @@ export default function FormClient() {
 
   const onSubmit = async (data) => {
     try {
-      const dataClient = {
-        razon_social: data.razon_social,
-        nombre_comercial: data.nombre_comercial,
-        direccion_entrega: data.direccion_entrega,
-        telefono: data.telefono,
-        email: data.email,
+      const idUsuario = localStorage.getItem("idUsuario");
+      const estadoCompra = 15;
+      const nombreCompleto = data.nombre;
+      const direccion = data.direccion;
+      const telefono = data.telefono;
+      const correo_eletronico = data.correo_electronico;
+      const fechaEntrega = data.fecha_entrega;
+      const totalOrden = totalCart;
+
+      const detalles = cart.map((producto) => ({
+        Productos_idProductos: producto.idProductos,
+        cantidad: producto.cantidad_orden,
+      }));
+
+      const dataOrden = {
+        Usuarios_idUsuarios: idUsuario,
+        Estados_idEstados: estadoCompra,
+        nombre_completo: nombreCompleto,
+        direccion: direccion,
+        telefono: telefono,
+        correo_electronico: correo_eletronico,
+        fecha_entrega: fechaEntrega,
+        total_orden: totalOrden,
+        detalles: detalles,
       };
 
       const response = await axios.post(
-        "http://localhost:3000/api/v1/clientes",
-        dataClient
+        "http://localhost:3000/api/v1/ordenes",
+        dataOrden,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       );
 
-      if (response.status === 201 || response.status === 200) {
-        setAlertMessage("¡Usuario registrado con éxito!");
+      if (response.status === 200 || response.status === 201) {
         setAlertSeverity("success");
-        setOpenAlert(true);
-        reset();
-      } else {
-        setAlertMessage("Algo salió mal. Inténtalo de nuevo.");
-        setAlertSeverity("error");
+        setAlertMessage("Orden confirmada exitosamente");
         setOpenAlert(true);
         reset(initialValues);
+        
+        clearCart();
+
+        setTimeout(() => {
+          navigate("/client");
+        }, 3000);
+      } else {
+        setAlertSeverity("error");
+        setAlertMessage("Algo salió mal. Inténtalo de nuevo.");
+        setOpenAlert(true);
       }
     } catch (error) {
-      setAlertMessage(
-        error?.response?.data?.mensaje || "Error al registrar el usuario."
-      );
       setAlertSeverity("error");
+      setAlertMessage(error.response.data.message);
       setOpenAlert(true);
     }
   };
@@ -112,40 +140,35 @@ export default function FormClient() {
         }}
       >
         <Box sx={{ width: "100%", height: "100%" }}>
-          <Paper
-            elevation={8}
-            sx={{ height: "100%", width: "100%" }}
-          >
-            <Box
-              padding={3}
-            >
+          <Paper elevation={8} sx={{ height: "100%", width: "100%" }}>
+            <Box padding={3}>
               <form onSubmit={handleSubmit(onSubmit)}>
                 <Grid container spacing={2}>
                   <Grid item xs={6}>
                     <TextField
-                      label="Razón social"
+                      label="Nombre completo"
                       variant="outlined"
                       margin="normal"
                       type="text"
                       fullWidth
-                      {...register("razon_social")}
-                      value={watch("razon_social")}
-                      error={!!errors.razon_social}
-                      helperText={errors.razon_social?.message}
+                      {...register("nombre")}
+                      value={watch("nombre")}
+                      error={!!errors.nombre}
+                      helperText={errors.nombre?.message}
                     />
                   </Grid>
 
                   <Grid item xs={6}>
                     <TextField
-                      label="Nombre comercial"
+                      label="Correo electrónico"
                       variant="outlined"
                       margin="normal"
-                      type="text"
+                      type="email"
                       fullWidth
-                      {...register("nombre_comercial")}
-                      value={watch("nombre_comercial")}
-                      error={!!errors.nombre_comercial}
-                      helperText={errors.nombre_comercial?.message}
+                      {...register("correo_electronico")}
+                      value={watch("correo_electronico")}
+                      error={!!errors.correo_electronico}
+                      helperText={errors.correo_electronico?.message}
                     />
                   </Grid>
                 </Grid>
@@ -164,32 +187,33 @@ export default function FormClient() {
                       helperText={errors.telefono?.message}
                     />
                   </Grid>
-
                   <Grid item xs={6}>
                     <TextField
-                      label="Email"
                       variant="outlined"
                       margin="normal"
+                      type="date"
                       fullWidth
-                      {...register("email")}
-                      value={watch("email")}
-                      error={!!errors.email}
-                      helperText={errors.email?.message}
+                      {...register("fecha_entrega")}
+                      value={watch("fecha_entrega")}
+                      error={!!errors.fecha_entrega}
+                      helperText={errors.fecha_entrega?.message}
                     />
                   </Grid>
                 </Grid>
 
-                <TextField
-                  label="Dirección de entrega"
-                  variant="outlined"
-                  margin="normal"
-                  type="text"
-                  fullWidth
-                  {...register("direccion_entrega")}
-                  value={watch("direccion_entrega")}
-                  error={!!errors.direccion_entrega}
-                  helperText={errors.direccion_entrega?.message}
-                />
+                <Grid item xs={6}>
+                  <TextField
+                    label="Dirección de entrega"
+                    variant="outlined"
+                    margin="normal"
+                    type="text"
+                    fullWidth
+                    {...register("direccion")}
+                    value={watch("direccion")}
+                    error={!!errors.direccion}
+                    helperText={errors.direccion?.message}
+                  />
+                </Grid>
 
                 <Box sx={{ display: "flex", justifyContent: "center" }}>
                   <Button
@@ -199,7 +223,7 @@ export default function FormClient() {
                     sx={{ marginTop: 2, width: "25%" }}
                     type="submit"
                   >
-                    Registrar
+                    Confirmar compra
                   </Button>
                 </Box>
               </form>

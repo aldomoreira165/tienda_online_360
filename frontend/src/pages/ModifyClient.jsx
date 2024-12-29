@@ -14,8 +14,6 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import InputLabel from "@mui/material/InputLabel";
 import FormControl from "@mui/material/FormControl";
-import AppBarOperator from "./../components/AppBarOperator";
-import AsideBar from "./../components/AsideBar";
 
 // valores iniciales del formulario
 const initialValues = {
@@ -33,7 +31,7 @@ function ModifyClient() {
   const [alertSeverity, setAlertSeverity] = useState("success");
   const [openAlert, setOpenAlert] = useState(false);
 
-  // esquema de validación de formulario
+  // configuraciones de validacion de formulario
   const schema = yup.object().shape({
     email: yup
       .string()
@@ -147,165 +145,146 @@ function ModifyClient() {
   };
 
   return (
-    <Box sx={{ height: "calc(100vh - 96px)", width: "100%" }}>
-      <AppBarOperator />
-      <Box
-        sx={{ marginTop: "96px", height: "calc(100vh - 96px)", width: "100%" }}
-      >
-        <Grid container spacing={0} sx={{ height: "100%", width: "100%" }}>
-          <Grid
-            item
-            xs={2}
-            sx={{ height: "100%", borderRight: "1px solid #ccc" }}
+    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Grid item xs={10} sx={{ height: "100%", width: "100%" }}>
+        <Box>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100%",
+              marginTop: 6,
+            }}
           >
-            <AsideBar />
-          </Grid>
-          <Grid item xs={10} sx={{ height: "100%", width: "100%" }}>
-            <Box>
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  height: "100%",
-                  marginTop: 6,
-                }}
-              >
-                <Typography
-                  variant="h6"
-                  component="h6"
-                  gutterBottom
-                  align="center"
-                >
-                  Modificar producto
-                </Typography>
-              </Box>
-              <Box
-                sx={{
-                  padding: 4,
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  height: "100%",
-                  width: "100%",
-                }}
-              >
-                <Paper elevation={4} sx={{ width: "100%" }}>
-                  <Box padding={3} sx={{ width: "100%" }}>
-                    <form onSubmit={handleSubmit(onSubmit)}>
-                      <FormControl fullWidth>
-                        <InputLabel id="cliente-label">Cliente</InputLabel>
-                        <Select
-                          id="select-cliente"
-                          labelId="cliente-label"
-                          label="Cliente"
-                          fullWidth
-                          required
-                          {...register("cliente")}
-                          value={watch("cliente")}
-                          onChange={(e) => handleChangeCliente(e.target.value)}
+            <Typography variant="h6" component="h6" gutterBottom align="center">
+              Modificar producto
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              padding: 4,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100%",
+              width: "100%",
+            }}
+          >
+            <Paper elevation={4} sx={{ width: "100%" }}>
+              <Box padding={3} sx={{ width: "100%" }}>
+                <form onSubmit={handleSubmit(onSubmit)}>
+                  <FormControl fullWidth>
+                    <InputLabel id="cliente-label">Cliente</InputLabel>
+                    <Select
+                      id="select-cliente"
+                      labelId="cliente-label"
+                      label="Cliente"
+                      fullWidth
+                      required
+                      {...register("cliente")}
+                      value={watch("cliente")}
+                      onChange={(e) => handleChangeCliente(e.target.value)}
+                    >
+                      {clientes.map((cliente) => (
+                        <MenuItem
+                          key={cliente.idClientes}
+                          value={cliente.idClientes}
                         >
-                          {clientes.map((cliente) => (
-                            <MenuItem
-                              key={cliente.idClientes}
-                              value={cliente.idClientes}
-                            >
-                              {cliente.razon_social} - {cliente.nombre_comercial}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                      <Grid container spacing={2}>
-                        <Grid item xs={6}>
-                          <TextField
-                            label="Razón social"
-                            variant="outlined"
-                            margin="normal"
-                            type="text"
-                            fullWidth
-                            value={watch("razon_social")}
-                            {...register("razon_social")}
-                            error={!!errors.razon_social}
-                            helperText={errors.razon_social?.message}
-                          />
-                        </Grid>
-
-                        <Grid item xs={6}>
-                          <TextField
-                            label="Nombre comercial"
-                            variant="outlined"
-                            margin="normal"
-                            type="text"
-                            fullWidth
-                            value={watch("nombre_comercial")}
-                            {...register("nombre_comercial")}
-                            error={!!errors.nombre_comercial}
-                            helperText={errors.nombre_comercial?.message}
-                          />
-                        </Grid>
-                      </Grid>
-
-                      <Grid container spacing={2}>
-                        <Grid item xs={6}>
-                          <TextField
-                            label="Email"
-                            variant="outlined"
-                            margin="normal"
-                            type="email"
-                            fullWidth
-                            value={watch("email")}
-                            {...register("email")}
-                            error={!!errors.email}
-                            helperText={errors.email?.message}
-                          />
-                        </Grid>
-
-                        <Grid item xs={6}>
-                          <TextField
-                            label="Teléfono"
-                            variant="outlined"
-                            margin="normal"
-                            type="tel"
-                            fullWidth
-                            value={watch("telefono")}
-                            {...register("telefono")}
-                            error={!!errors.telefono}
-                            helperText={errors.telefono?.message}
-                          />
-                        </Grid>
-                      </Grid>
-
+                          {cliente.razon_social} - {cliente.nombre_comercial}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <Grid container spacing={2}>
+                    <Grid item xs={6}>
                       <TextField
-                        label="Dirección de entrega"
+                        label="Razón social"
                         variant="outlined"
                         margin="normal"
                         type="text"
                         fullWidth
-                        value={watch("direccion_entrega")}
-                        {...register("direccion_entrega")}
-                        error={!!errors.direccion_entrega}
-                        helperText={errors.direccion_entrega?.message}
+                        value={watch("razon_social")}
+                        {...register("razon_social")}
+                        error={!!errors.razon_social}
+                        helperText={errors.razon_social?.message}
                       />
+                    </Grid>
 
-                      <Box sx={{ display: "flex", justifyContent: "center" }}>
-                        <Button
-                          variant="contained"
-                          color="success"
-                          fullWidth
-                          sx={{ marginTop: 2, width: "25%" }}
-                          type="submit"
-                        >
-                          Modificar cliente
-                        </Button>
-                      </Box>
-                    </form>
+                    <Grid item xs={6}>
+                      <TextField
+                        label="Nombre comercial"
+                        variant="outlined"
+                        margin="normal"
+                        type="text"
+                        fullWidth
+                        value={watch("nombre_comercial")}
+                        {...register("nombre_comercial")}
+                        error={!!errors.nombre_comercial}
+                        helperText={errors.nombre_comercial?.message}
+                      />
+                    </Grid>
+                  </Grid>
+
+                  <Grid container spacing={2}>
+                    <Grid item xs={6}>
+                      <TextField
+                        label="Email"
+                        variant="outlined"
+                        margin="normal"
+                        type="email"
+                        fullWidth
+                        value={watch("email")}
+                        {...register("email")}
+                        error={!!errors.email}
+                        helperText={errors.email?.message}
+                      />
+                    </Grid>
+
+                    <Grid item xs={6}>
+                      <TextField
+                        label="Teléfono"
+                        variant="outlined"
+                        margin="normal"
+                        type="tel"
+                        fullWidth
+                        value={watch("telefono")}
+                        {...register("telefono")}
+                        error={!!errors.telefono}
+                        helperText={errors.telefono?.message}
+                      />
+                    </Grid>
+                  </Grid>
+
+                  <TextField
+                    label="Dirección de entrega"
+                    variant="outlined"
+                    margin="normal"
+                    type="text"
+                    fullWidth
+                    value={watch("direccion_entrega")}
+                    {...register("direccion_entrega")}
+                    error={!!errors.direccion_entrega}
+                    helperText={errors.direccion_entrega?.message}
+                  />
+
+                  <Box sx={{ display: "flex", justifyContent: "center" }}>
+                    <Button
+                      variant="contained"
+                      color="success"
+                      fullWidth
+                      sx={{ marginTop: 2, width: "25%" }}
+                      type="submit"
+                    >
+                      Modificar cliente
+                    </Button>
                   </Box>
-                </Paper>
+                </form>
               </Box>
-            </Box>
-          </Grid>
-        </Grid>
-      </Box>
+            </Paper>
+          </Box>
+        </Box>
+      </Grid>
       <AlertMessage
         openAlert={openAlert}
         closeAlert={handleCloseAlert}

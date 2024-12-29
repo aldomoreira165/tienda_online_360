@@ -12,10 +12,9 @@ import Typography from "@mui/material/Typography";
 import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
-import AppBarOperator from "./../components/AppBarOperator";
-import AsideBar from "./../components/AsideBar";
 import AlertMessage from "./../components/AlertMessage";
 
+// valores iniciales del formulario
 const initialValues = {
   usuario: "",
 };
@@ -26,6 +25,7 @@ export default function ActiveUser() {
   const [alertSeverity, setAlertSeverity] = useState("success");
   const [openAlert, setOpenAlert] = useState(false);
 
+  // configuraciones de validacion de formulario
   const schema = yup.object().shape({
     usuario: yup.string().required("El usuario es requerido"),
   });
@@ -41,6 +41,7 @@ export default function ActiveUser() {
     defaultValues: initialValues,
   });
 
+  // Fetch usuarios inactivos
   const fetchInactiveUsers = async () => {
     try {
       const response = await axios.get(
@@ -96,20 +97,8 @@ export default function ActiveUser() {
   };
 
   return (
-    <Box sx={{ height: "calc(100vh - 96px)", width: "100%" }}>
-      <AppBarOperator />
-      <Box
-        sx={{ marginTop: "96px", height: "calc(100vh - 96px)", width: "100%" }}
-      >
-        <Grid container spacing={0} sx={{ height: "100%", width: "100%" }}>
-          <Grid
-            item
-            xs={2}
-            sx={{ height: "100%", borderRight: "1px solid #ccc" }}
-          >
-            <AsideBar />
-          </Grid>
-          <Grid item xs={10} sx={{ height: "100%", width: "100%" }}>
+    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Grid item xs={10} sx={{ height: "100%", width: "100%" }}>
             <Box>
               <Box
                 sx={{
@@ -193,8 +182,6 @@ export default function ActiveUser() {
               </Box>
             </Box>
           </Grid>
-        </Grid>
-      </Box>
       <AlertMessage
         openAlert={openAlert}
         closeAlert={handleCloseAlert}

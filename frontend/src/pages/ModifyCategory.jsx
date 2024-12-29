@@ -13,10 +13,9 @@ import Typography from "@mui/material/Typography";
 import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
-import AppBarOperator from "./../components/AppBarOperator";
-import AsideBar from "./../components/AsideBar";
 import AlertMessage from "./../components/AlertMessage";
 
+// valores iniciales del formulario
 const initialValues = {
   categoria: "",
   nombre: "",
@@ -30,6 +29,7 @@ export default function ModifyCategory() {
   const [alertSeverity, setAlertSeverity] = useState("success");
   const [openAlert, setOpenAlert] = useState(false);
 
+  // configuraciones de validacion de formulario
   const schema = yup.object().shape({
     nombre: yup
       .string()
@@ -66,6 +66,7 @@ export default function ModifyCategory() {
     }
   };
 
+  // Fetch estados
   const fetchEstados = async () => {
     try {
       const response = await axios.get("http://localhost:3000/api/v1/estados", {
@@ -152,115 +153,91 @@ export default function ModifyCategory() {
   };
 
   return (
-    <Box sx={{ height: "calc(100vh - 96px)", width: "100%" }}>
-      <AppBarOperator />
-      <Box
-        sx={{ marginTop: "96px", height: "calc(100vh - 96px)", width: "100%" }}
-      >
-        <Grid container spacing={0} sx={{ height: "100%", width: "100%" }}>
-          <Grid
-            item
-            xs={2}
-            sx={{ height: "100%", borderRight: "1px solid #ccc" }}
+    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Grid item xs={10} sx={{ height: "100%", width: "100%" }}>
+        <Box>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100%",
+              marginTop: 6,
+            }}
           >
-            <AsideBar />
-          </Grid>
-          <Grid item xs={10} sx={{ height: "100%", width: "100%" }}>
-            <Box>
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  height: "100%",
-                  marginTop: 6,
-                }}
-              >
-                <Typography
-                  variant="h6"
-                  component="h6"
-                  gutterBottom
-                  align="center"
-                >
-                  Modificar categoría
-                </Typography>
-              </Box>
-              <Box
-                sx={{ padding: 4, display: "flex", justifyContent: "center" }}
-              >
-                <Paper elevation={4} sx={{ width: "100%", padding: 3 }}>
-                  <form onSubmit={handleSubmit(onSubmit)}>
-                    <FormControl fullWidth margin="normal">
-                      <InputLabel id="categoria-label">Categoría</InputLabel>
-                      <Select
-                        id="select-categoria"
-                        labelId="categoria-label"
-                        label="Categoría"
-                        required
-                        {...register("categoria")}
-                        value={watch("categoria")}
-                        onChange={(e) => handleCategoriaChange(e.target.value)}
+            <Typography variant="h6" component="h6" gutterBottom align="center">
+              Modificar categoría
+            </Typography>
+          </Box>
+          <Box sx={{ padding: 4, display: "flex", justifyContent: "center" }}>
+            <Paper elevation={4} sx={{ width: "100%", padding: 3 }}>
+              <form onSubmit={handleSubmit(onSubmit)}>
+                <FormControl fullWidth margin="normal">
+                  <InputLabel id="categoria-label">Categoría</InputLabel>
+                  <Select
+                    id="select-categoria"
+                    labelId="categoria-label"
+                    label="Categoría"
+                    required
+                    {...register("categoria")}
+                    value={watch("categoria")}
+                    onChange={(e) => handleCategoriaChange(e.target.value)}
+                  >
+                    {categorias.map((categoria) => (
+                      <MenuItem
+                        key={categoria.idCategoriaProductos}
+                        value={categoria.idCategoriaProductos}
                       >
-                        {categorias.map((categoria) => (
-                          <MenuItem
-                            key={categoria.idCategoriaProductos}
-                            value={categoria.idCategoriaProductos}
-                          >
-                            {categoria.nombre}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
+                        {categoria.nombre}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
 
-                    <TextField
-                      label="Nombre"
-                      variant="outlined"
-                      margin="normal"
-                      fullWidth
-                      {...register("nombre")}
-                      value={watch("nombre")}
-                      error={!!errors.nombre}
-                      helperText={errors.nombre?.message}
-                    />
+                <TextField
+                  label="Nombre"
+                  variant="outlined"
+                  margin="normal"
+                  fullWidth
+                  {...register("nombre")}
+                  value={watch("nombre")}
+                  error={!!errors.nombre}
+                  helperText={errors.nombre?.message}
+                />
 
-                    <FormControl fullWidth margin="normal">
-                      <InputLabel id="estado-label">Estado</InputLabel>
-                      <Select
-                        id="select-estado"
-                        labelId="estado-label"
-                        label="Estado"
-                        {...register("estado")}
-                        value={watch("estado")}
-                      >
-                        {estados.map((estado) => (
-                          <MenuItem
-                            key={estado.idEstados}
-                            value={estado.idEstados}
-                          >
-                            {estado.nombre}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
+                <FormControl fullWidth margin="normal">
+                  <InputLabel id="estado-label">Estado</InputLabel>
+                  <Select
+                    id="select-estado"
+                    labelId="estado-label"
+                    label="Estado"
+                    {...register("estado")}
+                    value={watch("estado")}
+                  >
+                    {estados.map((estado) => (
+                      <MenuItem key={estado.idEstados} value={estado.idEstados}>
+                        {estado.nombre}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
 
-                    <Box sx={{ display: "flex", justifyContent: "center" }}>
-                      <Button
-                        variant="contained"
-                        color="success"
-                        fullWidth
-                        sx={{ marginTop: 2, width: "25%" }}
-                        type="submit"
-                      >
-                        Modificar categoría
-                      </Button>
-                    </Box>
-                  </form>
-                </Paper>
-              </Box>
-            </Box>
-          </Grid>
-        </Grid>
-      </Box>
+                <Box sx={{ display: "flex", justifyContent: "center" }}>
+                  <Button
+                    variant="contained"
+                    color="success"
+                    fullWidth
+                    sx={{ marginTop: 2, width: "25%" }}
+                    type="submit"
+                  >
+                    Modificar categoría
+                  </Button>
+                </Box>
+              </form>
+            </Paper>
+          </Box>
+        </Box>
+      </Grid>
       <AlertMessage
         openAlert={openAlert}
         closeAlert={handleCloseAlert}

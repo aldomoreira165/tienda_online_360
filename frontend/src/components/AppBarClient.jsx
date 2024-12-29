@@ -74,6 +74,10 @@ function AppBarClient() {
     navigate("/client");  
   };
 
+  const handleCartClick = () => {
+    navigate("/client/cart");
+  };
+
   const handleLogout = async () => {
     try {
       await axios.delete("http://localhost:3000/api/v1/auth/logout", {
@@ -134,7 +138,12 @@ function AppBarClient() {
             >
               {pages.map((page) => (
                 <MenuItem key={page} onClick={handleCloseNavMenu}>
-                  <Typography sx={{ textAlign: "center" }}>{page}</Typography>
+                  <Typography 
+                    sx={{ textAlign: "center" }}
+                    onClick={page === "Carrito" ? handleCartClick : handleMainClick}
+                  >
+                    {page}
+                  </Typography>
                 </MenuItem>
               ))}
             </Menu>
@@ -143,7 +152,7 @@ function AppBarClient() {
             {pages.map((page) => (
               <Button
                 key={page}
-                onClick={handleCloseNavMenu}
+                onClick={page === "Carrito" ? handleCartClick : handleMainClick}
                 sx={{ my: 2, color: "white", display: "block" }}
               >
                 {page}

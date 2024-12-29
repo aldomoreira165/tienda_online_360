@@ -10,8 +10,6 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import AlertMessage from "./../components/AlertMessage";
-import AppBarOperator from "./../components/AppBarOperator";
-import AsideBar from "./../components/AsideBar";
 
 // valores iniciales del formulario
 const initialValues = {
@@ -22,12 +20,12 @@ const initialValues = {
     direccion_entrega: "",
 };
 
-function AddClient() {
+export default function AddClient() {
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState("success");
   const [openAlert, setOpenAlert] = useState(false);
 
-  // esquema de validacion de formulario
+  // configuraciones de validacion de formulario
   const schema = yup.object().shape({
     email: yup
         .string()
@@ -102,20 +100,8 @@ function AddClient() {
   };
 
   return (
-    <Box sx={{ height: "calc(100vh - 96px)", width: "100%" }}>
-      <AppBarOperator />
-      <Box
-        sx={{ marginTop: "96px", height: "calc(100vh - 96px)", width: "100%" }}
-      >
-        <Grid container spacing={0} sx={{ height: "100%", width: "100%" }}>
-          <Grid
-            item
-            xs={2}
-            sx={{ height: "100%", borderRight: "1px solid #ccc" }}
-          >
-            <AsideBar />
-          </Grid>
-          <Grid item xs={10} sx={{ height: "100%", width: "100%" }}>
+    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Grid item xs={10} sx={{ height: "100%", width: "100%" }}>
             <Box>
               <Box
                 sx={{
@@ -237,8 +223,6 @@ function AddClient() {
               </Box>
             </Box>
           </Grid>
-        </Grid>
-      </Box>
       <AlertMessage
         openAlert={openAlert}
         closeAlert={handleCloseAlert}
@@ -248,5 +232,3 @@ function AddClient() {
     </Box>
   );
 }
-
-export default AddClient;

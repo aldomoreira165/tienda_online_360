@@ -12,10 +12,9 @@ import Typography from "@mui/material/Typography";
 import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
-import AppBarOperator from "./../components/AppBarOperator";
-import AsideBar from "./../components/AsideBar";
 import AlertMessage from "./../components/AlertMessage";
 
+// valores iniciales del formulario
 const initialValues = {
   usuario: "",
 };
@@ -26,6 +25,7 @@ export default function InactiveUser() {
   const [alertSeverity, setAlertSeverity] = useState("success");
   const [openAlert, setOpenAlert] = useState(false);
 
+  // configuraciones de validacion de formulario
   const schema = yup.object().shape({
     usuario: yup.string().required("El usuario es requerido"),
   });
@@ -64,11 +64,13 @@ export default function InactiveUser() {
 
   const onSubmit = async (data) => {
     try {
-
       const idUsuario = data.usuario;
 
       const response = await axios.put(
-        `http://localhost:3000/api/v1/usuarios/inactivar/${parseInt(idUsuario, 10)}`,
+        `http://localhost:3000/api/v1/usuarios/inactivar/${parseInt(
+          idUsuario,
+          10
+        )}`,
         {},
         {
           headers: {
@@ -96,105 +98,83 @@ export default function InactiveUser() {
   };
 
   return (
-    <Box sx={{ height: "calc(100vh - 96px)", width: "100%" }}>
-      <AppBarOperator />
-      <Box
-        sx={{ marginTop: "96px", height: "calc(100vh - 96px)", width: "100%" }}
-      >
-        <Grid container spacing={0} sx={{ height: "100%", width: "100%" }}>
-          <Grid
-            item
-            xs={2}
-            sx={{ height: "100%", borderRight: "1px solid #ccc" }}
+    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Grid item xs={10} sx={{ height: "100%", width: "100%" }}>
+        <Box>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100%",
+              marginTop: 6,
+            }}
           >
-            <AsideBar />
-          </Grid>
-          <Grid item xs={10} sx={{ height: "100%", width: "100%" }}>
-            <Box>
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  height: "100%",
-                  marginTop: 6,
-                }}
-              >
-                <Typography
-                  variant="h6"
-                  component="h6"
-                  gutterBottom
-                  align="center"
-                >
-                  Desactivar usuario
-                </Typography>
-              </Box>
-              <Box
-                sx={{
-                  padding: 4,
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  height: "100%",
-                  width: "100%",
-                }}
-              >
-                <Paper elevation={4} sx={{ width: "100%" }}>
-                  <Box padding={3} sx={{ width: "100%" }}>
-                    <FormControl
-                      fullWidth
-                      sx={{ height: "100%", width: "100%" }}
-                    >
-                      <form onSubmit={handleSubmit(onSubmit)}>
-                        <FormControl fullWidth margin="normal">
-                          <InputLabel id="usuario-label">
-                            Usuarios activos
-                          </InputLabel>
-                          <Select
-                            id="select-usuario"
-                            labelId="usuario-label"
-                            label="Usuarios activos"
-                            {...register("usuario")}
-                            value={watch("usuario")}
-                            error={!!errors.usuario}
+            <Typography variant="h6" component="h6" gutterBottom align="center">
+              Desactivar usuario
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              padding: 4,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100%",
+              width: "100%",
+            }}
+          >
+            <Paper elevation={4} sx={{ width: "100%" }}>
+              <Box padding={3} sx={{ width: "100%" }}>
+                <FormControl fullWidth sx={{ height: "100%", width: "100%" }}>
+                  <form onSubmit={handleSubmit(onSubmit)}>
+                    <FormControl fullWidth margin="normal">
+                      <InputLabel id="usuario-label">
+                        Usuarios activos
+                      </InputLabel>
+                      <Select
+                        id="select-usuario"
+                        labelId="usuario-label"
+                        label="Usuarios activos"
+                        {...register("usuario")}
+                        value={watch("usuario")}
+                        error={!!errors.usuario}
+                      >
+                        {activeUsers.map((activeUser) => (
+                          <MenuItem
+                            key={activeUser.idUsuarios}
+                            value={activeUser.idUsuarios}
                           >
-                            {activeUsers.map((activeUser) => (
-                              <MenuItem
-                                key={activeUser.idUsuarios}
-                                value={activeUser.idUsuarios}
-                              >
-                                {activeUser.nombre_completo} (
-                                {activeUser.correo_electronico})
-                              </MenuItem>
-                            ))}
-                          </Select>
-                          {errors.usuario && (
-                            <Typography variant="caption" color="error">
-                              {errors.usuario.message}
-                            </Typography>
-                          )}
-                        </FormControl>
-
-                        <Box sx={{ display: "flex", justifyContent: "center" }}>
-                          <Button
-                            variant="contained"
-                            color="success"
-                            fullWidth
-                            sx={{ marginTop: 2, width: "25%" }}
-                            type="submit"
-                          >
-                            Activar
-                          </Button>
-                        </Box>
-                      </form>
+                            {activeUser.nombre_completo} (
+                            {activeUser.correo_electronico})
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      {errors.usuario && (
+                        <Typography variant="caption" color="error">
+                          {errors.usuario.message}
+                        </Typography>
+                      )}
                     </FormControl>
-                  </Box>
-                </Paper>
+
+                    <Box sx={{ display: "flex", justifyContent: "center" }}>
+                      <Button
+                        variant="contained"
+                        color="success"
+                        fullWidth
+                        sx={{ marginTop: 2, width: "25%" }}
+                        type="submit"
+                      >
+                        Desactivar
+                      </Button>
+                    </Box>
+                  </form>
+                </FormControl>
               </Box>
-            </Box>
-          </Grid>
-        </Grid>
-      </Box>
+            </Paper>
+          </Box>
+        </Box>
+      </Grid>
       <AlertMessage
         openAlert={openAlert}
         closeAlert={handleCloseAlert}

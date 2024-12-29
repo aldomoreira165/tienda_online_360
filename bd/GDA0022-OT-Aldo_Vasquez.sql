@@ -2,11 +2,15 @@ create database GDA0022OTAldoVasquez;
 
 use GDA0022OTAldoVasquez;
 
-select * from Usuarios;
+select * from Productos;
+select * from Orden;
+select * from OrdenDetalles;
+select * from Estados;
 
-update Usuarios
-set Estados_idEstados = 2
-where idUsuarios = 2020;
+truncate table OrdenDetalles;
+
+delete from Orden
+where idOrden = 1007;
 
 -- creacion de tablas
 create table Productos(
@@ -625,7 +629,6 @@ end;
 create or alter proc p_insertarOrdenConDetalle
     @Usuarios_idUsuarios int,
     @Estados_idEstados int,
-    @fechaCreacion datetime,
     @nombre_completo varchar(100),
     @direccion varchar(545),
     @telefono varchar(45),
@@ -664,7 +667,7 @@ begin
         values (
             @Usuarios_idUsuarios, 
             @Estados_idEstados, 
-            @fechaCreacion, 
+            getdate(), 
             @nombre_completo, 
             @direccion, 
             @telefono, 

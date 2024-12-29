@@ -124,7 +124,7 @@ export default function FormUser({ rol }) {
       <Box
         sx={{
           flexGrow: 1,
-          height: "50vh",
+          height: "55vh",
           width: "100%",
           padding: "2rem",
           display: "flex",

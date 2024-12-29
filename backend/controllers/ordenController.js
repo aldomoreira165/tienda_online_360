@@ -21,7 +21,6 @@ const crearOrdenConDetalle = async (req, res) => {
             `EXEC p_insertarOrdenConDetalle 
             @Usuarios_idUsuarios = ${parseInt(Usuarios_idUsuarios, 10)},
             @Estados_idEstados = ${parseInt(Estados_idEstados, 10)},
-            @fechaCreacion = '${fechaCreacion}',
             @nombre_completo = '${nombre_completo}',
             @direccion = '${direccion}',
             @telefono = '${telefono}',
