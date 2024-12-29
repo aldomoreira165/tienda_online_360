@@ -160,6 +160,7 @@ const obtenerOrdenesUsuario = async (req, res) => {
                 ordenExistente.detalles.push({
                     Productos_idProductos: orden.Productos_idProductos,
                     nombre: orden.nombre,
+                    marca: orden.marca,
                     foto: orden.foto,
                     precio: orden.precio,
                     cantidad: orden.cantidad,
@@ -177,6 +178,7 @@ const obtenerOrdenesUsuario = async (req, res) => {
                     detalles: [{
                         Productos_idProductos: orden.Productos_idProductos,
                         nombre: orden.nombre,
+                        marca: orden.marca,
                         foto: orden.foto,
                         precio: orden.precio,
                         cantidad: orden.cantidad,

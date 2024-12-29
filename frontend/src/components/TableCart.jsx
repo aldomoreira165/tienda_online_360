@@ -76,7 +76,7 @@ export default function TableCart() {
                   <ArrowDropDownIcon />
                 </IconButton>
               </TableCell>
-              <TableCell align="right">Q{row.unit}</TableCell>
+              <TableCell align="right">Q{row.unit.toFixed(2)}</TableCell>
               <TableCell align="right">Q{ccyFormat(row.price)}</TableCell>
             </TableRow>
           ))}

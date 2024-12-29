@@ -66,7 +66,7 @@ function CardProduct({ producto }) {
               </Typography>
 
               <Typography variant="body2" color="text.secondary">
-                Precio: Q{producto.precio}
+                Precio: Q{producto.precio.toFixed(2)}
               </Typography>
             </Box>
           </Box>

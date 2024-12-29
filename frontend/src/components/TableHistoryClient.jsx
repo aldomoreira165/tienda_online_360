@@ -53,22 +53,26 @@ function Row(props) {
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box sx={{ margin: 1 }}>
               <Typography variant="h6" gutterBottom component="div">
-                History
+                Detalle de la orden
               </Typography>
               <Table size="small" aria-label="order history">
                 <TableHead>
                   <TableRow>
-                    <TableCell>Date</TableCell>
-                    <TableCell>Customer</TableCell>
-                    <TableCell align="right">Amount</TableCell>
+                    <TableCell>Producto</TableCell>
+                    <TableCell>Marca</TableCell>
+                    <TableCell>Precio</TableCell>
+                    <TableCell>Cantidad</TableCell>
+                    <TableCell align="right">Subtotal</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {row.history.map((historyRow, index) => (
+                  {row.detalles.map((detalle, index) => (
                     <TableRow key={index}>
-                      <TableCell>{historyRow.date}</TableCell>
-                      <TableCell>{historyRow.customerId}</TableCell>
-                      <TableCell align="right">{historyRow.amount}</TableCell>
+                      <TableCell>{detalle.producto}</TableCell>
+                      <TableCell>{detalle.marca}</TableCell>
+                      <TableCell>Q{detalle.precio.toFixed(2)}</TableCell>
+                      <TableCell>{detalle.cantidad}</TableCell>
+                      <TableCell align="right">Q{detalle.subtotal.toFixed(2)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -88,11 +92,13 @@ Row.propTypes = {
     fechaEntrega: PropTypes.string.isRequired,
     estadoNombre: PropTypes.string.isRequired,
     totalOrden: PropTypes.number.isRequired,
-    history: PropTypes.arrayOf(
+    detalles: PropTypes.arrayOf(
       PropTypes.shape({
-        date: PropTypes.string.isRequired,
-        customerId: PropTypes.string.isRequired,
-        amount: PropTypes.number.isRequired,
+        producto: PropTypes.string.isRequired,
+        marca: PropTypes.string.isRequired,
+        precio: PropTypes.number.isRequired,
+        cantidad: PropTypes.number.isRequired,
+        subtotal: PropTypes.number.isRequired,
       })
     ).isRequired,
   }).isRequired,
@@ -104,7 +110,8 @@ export default function TableHistoryClient({ ordenes }) {
     fechaRealizacion,
     fechaEntrega,
     totalOrden,
-    estadoNombre
+    estadoNombre,
+    detalles
   ) => {
     return {
       idOrden,
@@ -112,18 +119,13 @@ export default function TableHistoryClient({ ordenes }) {
       fechaEntrega,
       estadoNombre,
       totalOrden,
-      history: [
-        {
-          date: "2020-01-05",
-          customerId: "11091700",
-          amount: 3,
-        },
-        {
-          date: "2020-01-02",
-          customerId: "Anonymous",
-          amount: 1,
-        },
-      ],
+      detalles: detalles.map((detalle) => ({
+        producto: detalle.nombre,
+        marca: detalle.marca,
+        precio: detalle.precio,
+        cantidad: detalle.cantidad,
+        subtotal: detalle.subtotal,
+      })),
     };
   };
 
@@ -133,7 +135,8 @@ export default function TableHistoryClient({ ordenes }) {
       orden.fecha_creacion,
       orden.fecha_entrega,
       orden.total,
-      orden.estado_nombre
+      orden.estado_nombre,
+      orden.detalles
     )
   );
 
@@ -147,7 +150,7 @@ export default function TableHistoryClient({ ordenes }) {
             <TableCell>Fecha Creación</TableCell>
             <TableCell>Fecha Entrega</TableCell>
             <TableCell>Estado</TableCell>
-            <TableCell align="right">Total ($)</TableCell>
+            <TableCell align="right">Total</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -168,6 +171,15 @@ TableHistoryClient.propTypes = {
       fecha_entrega: PropTypes.string.isRequired,
       estado_nombre: PropTypes.string.isRequired,
       total: PropTypes.number.isRequired,
+      detalles: PropTypes.arrayOf(
+        PropTypes.shape({
+          nombre: PropTypes.string.isRequired,
+          marca: PropTypes.string.isRequired,
+          precio: PropTypes.number.isRequired,
+          cantidad: PropTypes.number.isRequired,
+          subtotal: PropTypes.number.isRequired,
+        })
+      ).isRequired
     })
   ).isRequired,
 };

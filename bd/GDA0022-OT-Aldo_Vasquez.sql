@@ -2,15 +2,6 @@ create database GDA0022OTAldoVasquez;
 
 use GDA0022OTAldoVasquez;
 
-select * from Orden;
-select * from OrdenDetalles;
-select * from Productos;
-
-truncate table OrdenDetalles;
-
-delete from Orden
-where idOrden = 1010;
-
 -- creacion de tablas
 create table Productos(
 	idProductos int identity(1, 1), 
@@ -768,7 +759,8 @@ begin
     d.subtotal,
 	p.nombre,
 	p.foto,
-	p.precio
+	p.precio,
+	p.marca
 	from 
 		Orden o
 	inner join 
