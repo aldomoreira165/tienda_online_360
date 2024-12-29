@@ -5,7 +5,8 @@ const {
     obtenerProductoId,
     obtenerProductosActivos, 
     crearProducto, 
-    actualizarProducto 
+    actualizarProducto,
+    reducirStockProducto
 } = require('../controllers/productoController');
 
 const { verificarAuth } = require('./../middlewares/verificarAutenticacion');
@@ -27,5 +28,9 @@ router
     .route('/:id')
     .get(obtenerProductoId)
     .put(actualizarProducto)
+
+router
+    .route('/reducirStock/:id')
+    .put(reducirStockProducto)
 
 module.exports = router;

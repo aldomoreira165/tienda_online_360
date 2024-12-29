@@ -61,6 +61,16 @@ export default function FormCart() {
     defaultValues: initialValues,
   });
 
+  const validateStock = (producto) => {
+    if (producto.cantidad_orden > producto.stock) {
+      setAlertSeverity("error");
+      setAlertMessage(`No hay suficiente stock de ${producto.nombre}. Stock disponible: ${producto.stock}`);
+      setOpenAlert(true);
+      return false;
+    }
+    return true;
+  };
+
   const onSubmit = async (data) => {
     try {
       const idUsuario = localStorage.getItem("idUsuario");
@@ -89,6 +99,32 @@ export default function FormCart() {
         detalles: detalles,
       };
 
+      // validando stock de productos
+      const isValid = cart.every(validateStock);
+
+      if (!isValid) {
+        return;
+      }
+
+      // reduciendo stock de productos
+      cart.forEach(async (producto) => {
+        const dataStock = {
+          cantidad: parseInt(producto.cantidad_orden),
+        };
+
+        const idProducto = producto.idProductos;
+
+        await axios.put(
+          `http://localhost:3000/api/v1/productos/reducirStock/${idProducto}`,
+          dataStock,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+      });
+
       const response = await axios.post(
         "http://localhost:3000/api/v1/ordenes",
         dataOrden,
@@ -104,7 +140,7 @@ export default function FormCart() {
         setAlertMessage("Orden confirmada exitosamente");
         setOpenAlert(true);
         reset(initialValues);
-        
+
         clearCart();
 
         setTimeout(() => {

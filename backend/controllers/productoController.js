@@ -156,10 +156,35 @@ const actualizarProducto = async (req, res) => {
   }
 };
 
+const reducirStockProducto = async (req, res) => {
+  const { id } = req.params;
+
+  const { cantidad } = req.body;
+
+  try {
+    const [results, _] = await sequelize.query(
+      `EXEC p_reducirStockProducto
+      @idProductos = ${parseInt(id, 10)},
+      @cantidadProducto = ${parseInt(cantidad, 10)}`
+    );
+
+    res.status(200).json({
+      estado: "exito",
+      data: results,
+    });
+  } catch (error) {
+    res.status(400).json({
+      estado: "error",
+      mensaje: error.message,
+    });
+  }
+};
+
 module.exports = {
   obtenerProductos,
   obtenerProductoId,
   obtenerProductosActivos,
   crearProducto,
   actualizarProducto,
+  reducirStockProducto,
 };

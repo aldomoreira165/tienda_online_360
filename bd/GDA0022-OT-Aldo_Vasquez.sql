@@ -2,15 +2,14 @@ create database GDA0022OTAldoVasquez;
 
 use GDA0022OTAldoVasquez;
 
-select * from Productos;
 select * from Orden;
 select * from OrdenDetalles;
-select * from Estados;
+select * from Productos;
 
 truncate table OrdenDetalles;
 
 delete from Orden
-where idOrden = 1007;
+where idOrden = 1010;
 
 -- creacion de tablas
 create table Productos(
@@ -510,6 +509,18 @@ create or alter proc p_obtenerProductosActivos
 as
 begin
 	select * from Productos where Estados_idEstados = 1;
+end;
+
+create or alter proc p_reducirStockProducto
+	@idProductos int,
+	@cantidadProducto int
+as
+begin
+	update Productos
+	set stock = stock - @cantidadProducto
+	where idProductos = @idProductos;
+
+	select * from Productos where idProductos = @idProductos;
 end;
 
 create or alter proc p_insertarProductos
