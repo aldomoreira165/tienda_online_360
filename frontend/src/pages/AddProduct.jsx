@@ -14,30 +14,27 @@ import AlertMessage from "./../components/AlertMessage";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import InputLabel from "@mui/material/InputLabel";
-import AppBarOperator from "./../components/AppBarOperator";
-import AsideBar from "./../components/AsideBar";
 
 // valores iniciales del formulario
 const initialValues = {
-    nombre: "",
-    marca: "",
-    stock: "",
-    codigo: "",
-    precio: "",
-    foto: "",
-    categoria: "",
-    estado: "",
-  };
+  nombre: "",
+  marca: "",
+  stock: "",
+  codigo: "",
+  precio: "",
+  foto: "",
+  categoria: "",
+  estado: "",
+};
 
-
-function AddProduct() {
+export default function AddProduct() {
   const [categorias, setCategorias] = useState([]);
   const [estados, setEstados] = useState([]);
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState("success");
   const [openAlert, setOpenAlert] = useState(false);
 
-  // esquema de validacion de formulario
+  // configuraciones de validacion de formulario
   const schema = yup.object().shape({
     nombre: yup
       .string()
@@ -59,7 +56,10 @@ function AddProduct() {
       .number()
       .positive("El precio debe ser positivo")
       .required("El precio es requerido"),
-    foto: yup.string().max(255, "Máximo 255 caracteres").required("La foto es requerida"),
+    foto: yup
+      .string()
+      .max(255, "Máximo 255 caracteres")
+      .required("La foto es requerida"),
     categoria: yup.number().required("La categoría es requerida"),
     estado: yup.number().required("El estado es requerido"),
   });
@@ -85,7 +85,6 @@ function AddProduct() {
           },
         }
       );
-
       setCategorias(response.data.data);
     } catch (error) {
       console.warn(error);
@@ -142,7 +141,6 @@ function AddProduct() {
         }
       );
 
-    
       if (response.status === 201 || response.status === 200) {
         setAlertMessage("¡Producto agregado con éxito!");
         setAlertSeverity("success");
@@ -162,228 +160,201 @@ function AddProduct() {
   };
 
   return (
-    <Box sx={{ height: "calc(100vh - 96px)", width: "100%" }}>
-      <AppBarOperator />
-      <Box
-        sx={{ marginTop: "96px", height: "calc(100vh - 96px)", width: "100%" }}
-      >
-        <Grid container spacing={0} sx={{ height: "100%", width: "100%" }}>
-          <Grid
-            item
-            xs={2}
-            sx={{ height: "100%", borderRight: "1px solid #ccc" }}
+    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Grid item xs={10} sx={{ height: "100%", width: "100%" }}>
+        <Box>
+          <Box marginTop={6}>
+            <Typography variant="h6" component="h6" gutterBottom align="center">
+              Agregar producto
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              padding: 4,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100%",
+              width: "100%",
+            }}
           >
-            <AsideBar />
-          </Grid>
-          <Grid item xs={10} sx={{ height: "100%", width: "100%" }}>
-            <Box>
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  height: "100%",
-                  marginTop: 6,
-                }}
-              >
-                <Typography
-                  variant="h6"
-                  component="h6"
-                  gutterBottom
-                  align="center"
-                >
-                  Agregar producto
-                </Typography>
-              </Box>
-              <Box
-                sx={{
-                  padding: 4,
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  height: "100%",
-                  width: "100%",
-                }}
-              >
-                <Paper elevation={4} sx={{ width: "100%" }}>
-                  <Box padding={3} sx={{ width: "100%" }}>
-                    <form onSubmit={handleSubmit(onSubmit)}>
-                      <Grid container spacing={2}>
-                        <Grid item xs={6}>
-                          <TextField
-                            label="Nombre"
-                            variant="outlined"
-                            margin="normal"
-                            type="text"
-                            fullWidth
-                            value={watch("nombre")}
-                            {...register("nombre")}
-                            error={!!errors.nombre}
-                            helperText={errors.nombre?.message}
-                          />
-                        </Grid>
-
-                        <Grid item xs={6}>
-                          <TextField
-                            label="Marca"
-                            variant="outlined"
-                            margin="normal"
-                            type="text"
-                            fullWidth
-                            value={watch("marca")}
-                            {...register("marca")}
-                            error={!!errors.marca}
-                            helperText={errors.marca?.message}
-                          />
-                        </Grid>
-                      </Grid>
-
-                      <Grid container spacing={2}>
-                        <Grid item xs={4}>
-                          <Box sx={{ width: "100%", position: "relative" }}>
-                            <FormControl fullWidth margin="normal">
-                              <InputLabel id="categoria-label">
-                                Categoría
-                              </InputLabel>
-                              <Select
-                                id="select-categoria"
-                                labelId="categoria-label"
-                                label="Categoría"
-                                required
-                                value={watch("categoria")}
-                                {...register("categoria")}
-                                error={!!errors.categoria}
-                              >
-                                {categorias.map((categoria) => (
-                                  <MenuItem
-                                    key={categoria.idCategoriaProductos}
-                                    value={categoria.idCategoriaProductos}
-                                  >
-                                    {categoria.nombre}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                              {errors.categoria && (
-                                <Typography variant="caption" color="error">
-                                  {errors.categoria.message}
-                                </Typography>
-                              )}
-                            </FormControl>
-                          </Box>
-                        </Grid>
-                        <Grid item xs={4}>
-                          <TextField
-                            label="Stock"
-                            variant="outlined"
-                            margin="normal"
-                            type="number"
-                            fullWidth
-                            required
-                            value={watch("stock")}
-                            {...register("stock")}
-                            error={!!errors.stock}
-                            helperText={errors.stock?.message}
-                          />
-                        </Grid>
-                        <Grid item xs={4}>
-                          <TextField
-                            label="Código"
-                            variant="outlined"
-                            margin="normal"
-                            type="text"
-                            fullWidth
-                            value={watch("codigo")}
-                            {...register("codigo")}
-                            error={!!errors.codigo}
-                            helperText={errors.codigo?.message}
-                          />
-                        </Grid>
-                      </Grid>
-
-                      <Grid container spacing={2}>
-                        <Grid item xs={6}>
-                          <Box
-                            sx={{
-                              width: "100%",
-                              position: "relative",
-                            }}
-                          >
-                            <FormControl fullWidth margin="normal">
-                              <InputLabel id="estado-label" >Estado</InputLabel>
-                              <Select
-                                id="select-estado"
-                                labelId="estado-label"
-                                label="Estado"
-                                fullWidth
-                                required
-                                value={watch("estado")}
-                                {...register("estado")}
-                                error={!!errors.estado}
-                              >
-                                {estados.map((estado) => (
-                                  <MenuItem
-                                    key={estado.idEstados}
-                                    value={estado.idEstados}
-                                  >
-                                    {estado.nombre}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                              {errors.estado && (
-                                <Typography variant="caption" color="error">
-                                  {errors.estado?.message}
-                                </Typography>
-                              )}
-                            </FormControl>
-                          </Box>
-                        </Grid>
-                        <Grid item xs={6}>
-                          <TextField
-                            label="Precio"
-                            variant="outlined"
-                            margin="normal"
-                            type="number"
-                            fullWidth
-                            required
-                            value={watch("precio")}
-                            {...register("precio")}
-                            error={!!errors.precio}
-                            helperText={errors.precio?.message}
-                          />
-                        </Grid>
-                      </Grid>
-
+            <Paper elevation={4} sx={{ width: "100%" }}>
+              <Box padding={3} sx={{ width: "100%" }}>
+                <form onSubmit={handleSubmit(onSubmit)}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={6}>
                       <TextField
-                        label="Foto (url)"
+                        label="Nombre"
                         variant="outlined"
                         margin="normal"
                         type="text"
                         fullWidth
-                        value={watch("foto")}
-                        {...register("foto")}
-                        error={!!errors.foto}
-                        helperText={errors.foto?.message}
+                        value={watch("nombre")}
+                        {...register("nombre")}
+                        error={!!errors.nombre}
+                        helperText={errors.nombre?.message}
                       />
+                    </Grid>
 
-                      <Box sx={{ display: "flex", justifyContent: "center" }}>
-                        <Button
-                          variant="contained"
-                          color="success"
-                          fullWidth
-                          sx={{ marginTop: 2, width: "25%" }}
-                          type="submit"
-                        >
-                          Agregar producto
-                        </Button>
+                    <Grid item xs={6}>
+                      <TextField
+                        label="Marca"
+                        variant="outlined"
+                        margin="normal"
+                        type="text"
+                        fullWidth
+                        value={watch("marca")}
+                        {...register("marca")}
+                        error={!!errors.marca}
+                        helperText={errors.marca?.message}
+                      />
+                    </Grid>
+                  </Grid>
+
+                  <Grid container spacing={2}>
+                    <Grid item xs={4}>
+                      <Box sx={{ width: "100%", position: "relative" }}>
+                        <FormControl fullWidth margin="normal">
+                          <InputLabel id="categoria-label">
+                            Categoría
+                          </InputLabel>
+                          <Select
+                            id="select-categoria"
+                            labelId="categoria-label"
+                            label="Categoría"
+                            required
+                            value={watch("categoria")}
+                            {...register("categoria")}
+                            error={!!errors.categoria}
+                          >
+                            {categorias.map((categoria) => (
+                              <MenuItem
+                                key={categoria.idCategoriaProductos}
+                                value={categoria.idCategoriaProductos}
+                              >
+                                {categoria.nombre}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                          {errors.categoria && (
+                            <Typography variant="caption" color="error">
+                              {errors.categoria.message}
+                            </Typography>
+                          )}
+                        </FormControl>
                       </Box>
-                    </form>
+                    </Grid>
+                    <Grid item xs={4}>
+                      <TextField
+                        label="Stock"
+                        variant="outlined"
+                        margin="normal"
+                        type="number"
+                        fullWidth
+                        required
+                        value={watch("stock")}
+                        {...register("stock")}
+                        error={!!errors.stock}
+                        helperText={errors.stock?.message}
+                      />
+                    </Grid>
+                    <Grid item xs={4}>
+                      <TextField
+                        label="Código"
+                        variant="outlined"
+                        margin="normal"
+                        type="text"
+                        fullWidth
+                        value={watch("codigo")}
+                        {...register("codigo")}
+                        error={!!errors.codigo}
+                        helperText={errors.codigo?.message}
+                      />
+                    </Grid>
+                  </Grid>
+
+                  <Grid container spacing={2}>
+                    <Grid item xs={6}>
+                      <Box
+                        sx={{
+                          width: "100%",
+                          position: "relative",
+                        }}
+                      >
+                        <FormControl fullWidth margin="normal">
+                          <InputLabel id="estado-label">Estado</InputLabel>
+                          <Select
+                            id="select-estado"
+                            labelId="estado-label"
+                            label="Estado"
+                            fullWidth
+                            required
+                            value={watch("estado")}
+                            {...register("estado")}
+                            error={!!errors.estado}
+                          >
+                            {estados.map((estado) => (
+                              <MenuItem
+                                key={estado.idEstados}
+                                value={estado.idEstados}
+                              >
+                                {estado.nombre}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                          {errors.estado && (
+                            <Typography variant="caption" color="error">
+                              {errors.estado?.message}
+                            </Typography>
+                          )}
+                        </FormControl>
+                      </Box>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <TextField
+                        label="Precio"
+                        variant="outlined"
+                        margin="normal"
+                        type="number"
+                        fullWidth
+                        required
+                        value={watch("precio")}
+                        {...register("precio")}
+                        error={!!errors.precio}
+                        helperText={errors.precio?.message}
+                      />
+                    </Grid>
+                  </Grid>
+
+                  <TextField
+                    label="Foto (url)"
+                    variant="outlined"
+                    margin="normal"
+                    type="text"
+                    fullWidth
+                    value={watch("foto")}
+                    {...register("foto")}
+                    error={!!errors.foto}
+                    helperText={errors.foto?.message}
+                  />
+
+                  <Box sx={{ display: "flex", justifyContent: "center" }}>
+                    <Button
+                      variant="contained"
+                      color="success"
+                      fullWidth
+                      sx={{ marginTop: 2, width: "25%" }}
+                      type="submit"
+                    >
+                      Agregar producto
+                    </Button>
                   </Box>
-                </Paper>
+                </form>
               </Box>
-            </Box>
-          </Grid>
-        </Grid>
-      </Box>
+            </Paper>
+          </Box>
+        </Box>
+      </Grid>
       <AlertMessage
         openAlert={openAlert}
         closeAlert={handleCloseAlert}
@@ -393,5 +364,3 @@ function AddProduct() {
     </Box>
   );
 }
-
-export default AddProduct;

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import axios from "axios";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
@@ -14,7 +15,6 @@ import MenuItem from "@mui/material/MenuItem";
 import logo from "./../assets/images/tiendita_logo.jpg";
 import AlertMessage from "./AlertMessage";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 
 const pages = ["Productos", "Carrito", "Historial de Compras"];
 const settings = ["Perfil", "Logout"];
@@ -41,7 +41,7 @@ function AppBarClient() {
             },
           }
         );
-        
+
         setUsuario(response.data.data);
       } catch (error) {
         console.error(error);
@@ -70,8 +70,14 @@ function AppBarClient() {
     setOpenAlert(false);
   };
 
-  const handleMainClick = () => {
-    navigate("/client");  
+  const pageRoutes = {
+    Productos: "/client",
+    Carrito: "/client/cart",
+    "Historial de Compras": "/client/history",
+  };
+
+  const handleNavigation = (route) => {
+    navigate(route);
   };
 
   const handleLogout = async () => {
@@ -90,10 +96,11 @@ function AppBarClient() {
       setAlertMessage("Cerrando sesión. Redirigiendo...");
       setOpenAlert(true);
       setTimeout(() => navigate("/"), 2000);
-    }
-    catch (error) {
+    } catch (error) {
       setAlertSeverity("error");
-      setAlertMessage(error?.response?.data?.mensaje || "Ocurrió un error al cerrar sesión"); 
+      setAlertMessage(
+        error?.response?.data?.mensaje || "Ocurrió un error al cerrar sesión"
+      );
       setOpenAlert(true);
     }
   };
@@ -102,8 +109,13 @@ function AppBarClient() {
     <AppBar position="fixed">
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          <Box sx={{ display: "flex", justifyContent: "center"}}>
-            <img className="logo-nav" src={logo} alt="logo" onClick={handleMainClick}></img>
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
+            <img
+              className="logo-nav"
+              src={logo}
+              alt="logo"
+              onClick={() => handleNavigation("/client")}
+            ></img>
           </Box>
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
             <IconButton
@@ -134,7 +146,12 @@ function AppBarClient() {
             >
               {pages.map((page) => (
                 <MenuItem key={page} onClick={handleCloseNavMenu}>
-                  <Typography sx={{ textAlign: "center" }}>{page}</Typography>
+                  <Typography
+                    sx={{ textAlign: "center" }}
+                    onClick={() => handleNavigation(pageRoutes[page])}
+                  >
+                    {page}
+                  </Typography>
                 </MenuItem>
               ))}
             </Menu>
@@ -143,7 +160,7 @@ function AppBarClient() {
             {pages.map((page) => (
               <Button
                 key={page}
-                onClick={handleCloseNavMenu}
+                onClick={() => handleNavigation(pageRoutes[page])}
                 sx={{ my: 2, color: "white", display: "block" }}
               >
                 {page}

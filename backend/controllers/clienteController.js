@@ -91,8 +91,29 @@ const obtenerClientes = async (req, res) => {
   }
 };
 
+const obtenerClienteId = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [results, _] = await sequelize.query(
+      `EXEC p_obtenerClienteID @idClientes = ${parseInt(id, 10)}`
+    );
+
+    res.status(200).json({
+      estado: "exito",
+      data: results,
+    });
+  } catch (error) {
+    res.status(400).json({
+      estado: "error",
+      mensaje: error.message,
+    });
+  }
+};
+
 module.exports = {
   crearCliente,
   actualizarCliente,
   obtenerClientes,
+  obtenerClienteId,
 };
