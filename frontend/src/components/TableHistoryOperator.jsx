@@ -13,7 +13,7 @@ import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import ClearIcon from "@mui/icons-material/Clear";
+
 
 // formateando la fecha
 const formatDate = (dateString) => {
@@ -28,8 +28,6 @@ const formatDate = (dateString) => {
 function Row(props) {
   const { row } = props;
   const [open, setOpen] = React.useState(false);
-
-
 
   return (
     <React.Fragment>
@@ -46,21 +44,13 @@ function Row(props) {
         <TableCell component="th" scope="row">
           {row.idOrden}
         </TableCell>
+        <TableCell>{row.idUsuario}</TableCell>
+        <TableCell>{row.emailUsuario}</TableCell>
         <TableCell>{formatDate(row.fechaRealizacion)}</TableCell>
         <TableCell>{formatDate(row.fechaEntrega)}</TableCell>
         <TableCell>{row.direccionEntrega}</TableCell>
         <TableCell>{row.estadoNombre}</TableCell>
-        <TableCell>Q{row.totalOrden.toFixed(2)}</TableCell>
-
-        <TableCell align="right">
-          <IconButton 
-            color="error"
-            disabled={row.estadoNombre !== "Confirmado"}
-            onClick={() => props.onReject(row.idOrden)}
-          >
-            <ClearIcon />
-          </IconButton>
-        </TableCell>
+        <TableCell align="right">Q{row.totalOrden.toFixed(2)}</TableCell>
       </TableRow>
       <TableRow>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
@@ -86,7 +76,9 @@ function Row(props) {
                       <TableCell>{detalle.marca}</TableCell>
                       <TableCell>Q{detalle.precio.toFixed(2)}</TableCell>
                       <TableCell>{detalle.cantidad}</TableCell>
-                      <TableCell align="right">Q{detalle.subtotal.toFixed(2)}</TableCell>
+                      <TableCell align="right">
+                        Q{detalle.subtotal.toFixed(2)}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -107,6 +99,8 @@ Row.propTypes = {
     direccionEntrega: PropTypes.string.isRequired,
     estadoNombre: PropTypes.string.isRequired,
     totalOrden: PropTypes.number.isRequired,
+    idUsuario: PropTypes.number.isRequired,
+    emailUsuario: PropTypes.string.isRequired,
     detalles: PropTypes.arrayOf(
       PropTypes.shape({
         producto: PropTypes.string.isRequired,
@@ -117,10 +111,9 @@ Row.propTypes = {
       })
     ).isRequired,
   }).isRequired,
-  onReject: PropTypes.func.isRequired,
 };
 
-export default function TableHistoryClient({ ordenes, onReject }) {
+export default function TableHistoryOperator({ ordenes }) {
   const createData = (
     idOrden,
     fechaRealizacion,
@@ -128,7 +121,9 @@ export default function TableHistoryClient({ ordenes, onReject }) {
     direccionEntrega,
     totalOrden,
     estadoNombre,
-    detalles
+    detalles,
+    idUsuario,
+    emailUsuario
   ) => {
     return {
       idOrden,
@@ -137,6 +132,8 @@ export default function TableHistoryClient({ ordenes, onReject }) {
       direccionEntrega,
       estadoNombre,
       totalOrden,
+      idUsuario,
+      emailUsuario,
       detalles: detalles.map((detalle) => ({
         producto: detalle.nombre,
         marca: detalle.marca,
@@ -155,7 +152,9 @@ export default function TableHistoryClient({ ordenes, onReject }) {
       orden.direccion,
       orden.total,
       orden.estado_nombre,
-      orden.detalles
+      orden.detalles,
+      orden.idUsuario,
+      orden.emailUsuario
     )
   );
 
@@ -166,17 +165,18 @@ export default function TableHistoryClient({ ordenes, onReject }) {
           <TableRow>
             <TableCell />
             <TableCell>ID Orden</TableCell>
+            <TableCell>ID Usuario</TableCell>
+            <TableCell>Email Usuario</TableCell>
             <TableCell>Fecha Creación</TableCell>
             <TableCell>Fecha Entrega</TableCell>
             <TableCell>Dirección Entrega</TableCell>
             <TableCell>Estado</TableCell>
-            <TableCell>Total</TableCell>
-            <TableCell align="right">Acciones</TableCell>
+            <TableCell align="right">Total</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {rows.map((row) => (
-            <Row key={row.idOrden} row={row} onReject={onReject} />
+            <Row key={row.idOrden} row={row} />
           ))}
         </TableBody>
       </Table>
@@ -184,7 +184,7 @@ export default function TableHistoryClient({ ordenes, onReject }) {
   );
 }
 
-TableHistoryClient.propTypes = {
+TableHistoryOperator.propTypes = {
   ordenes: PropTypes.arrayOf(
     PropTypes.shape({
       idOrden: PropTypes.number.isRequired,
@@ -193,6 +193,8 @@ TableHistoryClient.propTypes = {
       direccion: PropTypes.string.isRequired,
       estado_nombre: PropTypes.string.isRequired,
       total: PropTypes.number.isRequired,
+      idUsuario: PropTypes.number.isRequired,
+      emailUsuario: PropTypes.string.isRequired,
       detalles: PropTypes.arrayOf(
         PropTypes.shape({
           nombre: PropTypes.string.isRequired,
@@ -201,8 +203,7 @@ TableHistoryClient.propTypes = {
           cantidad: PropTypes.number.isRequired,
           subtotal: PropTypes.number.isRequired,
         })
-      ).isRequired
+      ).isRequired,
     })
   ).isRequired,
-  onReject: PropTypes.func.isRequired,
 };

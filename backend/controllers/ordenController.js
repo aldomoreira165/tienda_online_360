@@ -67,6 +67,10 @@ const obtenerOrdenes = async (req, res) => {
             if (ordenExistente) {
                 ordenExistente.detalles.push({
                     Productos_idProductos: orden.Productos_idProductos,
+                    nombre: orden.nombre,
+                    marca: orden.marca,
+                    foto: orden.foto,
+                    precio: orden.precio,
                     cantidad: orden.cantidad,
                     subtotal: orden.subtotal
                 });
@@ -76,8 +80,18 @@ const obtenerOrdenes = async (req, res) => {
                     Usuarios_idUsuarios: orden.Usuarios_idUsuarios,
                     Estados_idEstados: orden.Estados_idEstados,
                     fecha_creacion: orden.fecha_creacion,
+                    fecha_entrega: orden.fecha_entrega,
+                    direccion: orden.direccion,
+                    estado_nombre: orden.estado_nombre,
+                    total: orden.total_orden,
+                    idUsuario: orden.Usuarios_idUsuarios,
+                    emailUsuario: orden.correo_electronico,
                     detalles: [{
                         Productos_idProductos: orden.Productos_idProductos,
+                        nombre: orden.nombre,
+                        marca: orden.marca,
+                        foto: orden.foto,
+                        precio: orden.precio,
                         cantidad: orden.cantidad,
                         subtotal: orden.subtotal
                     }]
@@ -173,6 +187,7 @@ const obtenerOrdenesUsuario = async (req, res) => {
                     Estados_idEstados: orden.Estados_idEstados,
                     fecha_creacion: orden.fecha_creacion,
                     fecha_entrega: orden.fecha_entrega,
+                    direccion: orden.direccion,
                     estado_nombre: orden.estado_nombre,
                     total: orden.total_orden,
                     detalles: [{
@@ -200,6 +215,106 @@ const obtenerOrdenesUsuario = async (req, res) => {
         });
     }
 };
+
+const obtenerOrdenesConfirmadas = async (req, res) => {
+    try {
+        const [results, _] = await sequelize.query(
+            `EXEC p_obtenerOrdenesConfirmadas`
+        );
+
+        // agrupando los resultados por idOrden
+        const ordenes = [];
+        results.forEach((orden) => {
+            const ordenExistente = ordenes.find(o => o.idOrden === orden.idOrden);
+            if (ordenExistente) {
+                ordenExistente.detalles.push({
+                    Productos_idProductos: orden.Productos_idProductos,
+                    nombre: orden.nombre,
+                    marca: orden.marca,
+                    foto: orden.foto,
+                    precio: orden.precio,
+                    cantidad: orden.cantidad,
+                    subtotal: orden.subtotal
+                });
+            } else {
+                ordenes.push({
+                    idOrden: orden.idOrden,
+                    Usuarios_idUsuarios: orden.Usuarios_idUsuarios,
+                    Estados_idEstados: orden.Estados_idEstados,
+                    fecha_creacion: orden.fecha_creacion,
+                    fecha_entrega: orden.fecha_entrega,
+                    direccion: orden.direccion,
+                    estado_nombre: orden.estado_nombre,
+                    total: orden.total_orden,
+                    idUsuario: orden.Usuarios_idUsuarios,
+                    emailUsuario: orden.correo_electronico,
+                    detalles: [{
+                        Productos_idProductos: orden.Productos_idProductos,
+                        nombre: orden.nombre,
+                        marca: orden.marca,
+                        foto: orden.foto,
+                        precio: orden.precio,
+                        cantidad: orden.cantidad,
+                        subtotal: orden.subtotal
+                    }]
+                });
+            }
+        });
+
+        res.status(200).json({
+            estado: 'exito',
+            data: ordenes,
+        });
+
+    } catch (error) {
+        res.status(400).json({
+            estado: 'error',
+            mensaje: error.message
+        });
+    }
+}
+
+const entregarOrden = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const [results, _] = await sequelize.query(
+            `EXEC p_entregarOrden @idOrden = ${parseInt(id, 10)}`
+        );
+
+        res.status(200).json({
+            estado: 'exito',
+            data: results[0],
+        });
+
+    } catch (error) {
+        res.status(400).json({
+            estado: 'error',
+            mensaje: error.message
+        });
+    }
+}
+
+const rechazarOrden = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const [results, _] = await sequelize.query(
+            `EXEC p_rechazarOrden @idOrden = ${parseInt(id, 10)}`
+        );
+
+        res.status(200).json({
+            estado: 'exito',
+            data: results[0],
+        });
+
+    } catch (error) {
+        res.status(400).json({
+            estado: 'error',
+            mensaje: error.message
+        });
+    }
+}
 
 const actualizarOrden = async (req, res) => {
     const { id } = req.params;
@@ -249,10 +364,35 @@ const actualizarOrden = async (req, res) => {
     }
 };
 
+const cancelarOrden = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const [results, _] = await sequelize.query(
+            `EXEC p_cancelarOrden @idOrden = ${parseInt(id, 10)}`
+        );
+
+        res.status(200).json({
+            estado: 'exito',
+            data: results[0],
+        });
+
+    } catch (error) {
+        res.status(400).json({
+            estado: 'error',
+            mensaje: error.message
+        });
+    }
+}
+
 module.exports = {
     crearOrdenConDetalle,
     obtenerOrdenes,
     obtenerOrdenesUsuario,
     obtenerOrdenId,
+    obtenerOrdenesConfirmadas,
     actualizarOrden,
+    entregarOrden,
+    rechazarOrden,
+    cancelarOrden
 };

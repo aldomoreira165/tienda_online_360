@@ -17,6 +17,7 @@ import ModifyClient from "./pages/ModifyClient";
 import Cart from "./pages/Cart";
 import ConfirmCart from "./pages/ConfirmCart";
 import HistoryClient from "./pages/HistoryClient";
+import ConfirmOrdersOperator from "./pages/ConfirmOrdersOperator";
 
 export default function App() {
     return (
@@ -43,6 +44,7 @@ export default function App() {
                     <Route path="user/inactive" element={<InactiveUser/>}/>
                     <Route path="client/add" element={<AddClient/>}/>
                     <Route path="client/modify" element={<ModifyClient/>}/>
+                    <Route path="order/confirm" element={<ConfirmOrdersOperator/>}/>
                 </Route>
             </Routes>
         </BrowserRouter>

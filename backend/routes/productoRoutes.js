@@ -6,6 +6,7 @@ const {
     obtenerProductosActivos, 
     crearProducto, 
     actualizarProducto,
+    incrementarStockProducto,
     reducirStockProducto
 } = require('../controllers/productoController');
 
@@ -28,6 +29,10 @@ router
     .route('/:id')
     .get(obtenerProductoId)
     .put(actualizarProducto)
+
+router
+    .route('/incrementarStock/:id')
+    .put(incrementarStockProducto)
 
 router
     .route('/reducirStock/:id')

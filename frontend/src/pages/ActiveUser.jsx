@@ -100,15 +100,7 @@ export default function ActiveUser() {
     <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
       <Grid item xs={10} sx={{ height: "100%", width: "100%" }}>
             <Box>
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  height: "100%",
-                  marginTop: 6,
-                }}
-              >
+              <Box marginTop={6}>
                 <Typography
                   variant="h6"
                   component="h6"

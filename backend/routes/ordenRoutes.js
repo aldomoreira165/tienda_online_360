@@ -4,8 +4,12 @@ const {
     crearOrdenConDetalle, 
     obtenerOrdenes, 
     obtenerOrdenesUsuario, 
-    obtenerOrdenId, 
-    actualizarOrden  
+    obtenerOrdenId,
+    obtenerOrdenesConfirmadas, 
+    actualizarOrden,
+    entregarOrden,
+    rechazarOrden,
+    cancelarOrden
 } = require('./../controllers/ordenController');
 
 const { verificarAuth } = require('./../middlewares/verificarAutenticacion');
@@ -20,6 +24,10 @@ router
     .post(crearOrdenConDetalle)
 
 router
+    .route('/confirmadas')
+    .get(obtenerOrdenesConfirmadas)
+
+router
     .route('/:id')
     .get(obtenerOrdenId)
     .put(actualizarOrden)
@@ -27,5 +35,17 @@ router
 router
     .route('/usuario/:id')
     .get(obtenerOrdenesUsuario)
+
+router
+    .route('/entregar/:id')
+    .put(entregarOrden)
+
+router
+    .route('/rechazar/:id')
+    .put(rechazarOrden)
+
+router
+    .route('/cancelar/:id')
+    .put(cancelarOrden)
 
 module.exports = router;

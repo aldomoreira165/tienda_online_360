@@ -11,32 +11,70 @@ export default function HistoryClient() {
   const [alertSeverity, setAlertSeverity] = useState("success");
   const [openAlert, setOpenAlert] = useState(false);
 
-  useEffect(() => {
-    const fetchOrdenes = async () => {
-      try {
-        const idUsuario = localStorage.getItem("idUsuario");
+  const fetchOrdenes = async () => {
+    try {
+      const idUsuario = localStorage.getItem("idUsuario");
 
-        const response = await axios.get(
-          `http://localhost:3000/api/v1/ordenes/usuario/${idUsuario}`,
+      const response = await axios.get(
+        `http://localhost:3000/api/v1/ordenes/usuario/${idUsuario}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      setOrdenes(response.data.data);
+      console.log(response.data.data);
+    } catch (error) {
+      console.error(error);
+      setAlertSeverity("error");
+      setAlertMessage("Error al obtener las órdenes de compra");
+      setOpenAlert(true);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrdenes();
+  }, []);
+
+  const handleReject = async (idOrden) => {
+    try {
+      await axios.put(
+        `http://localhost:3000/api/v1/ordenes/cancelar/${idOrden}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      // incrementar nuevamente el stock de cada producto
+      const ordenRechazada = ordenes.find((orden) => orden.idOrden === idOrden);
+
+      const detalleOrdenRechazada = ordenRechazada.detalles;
+
+      detalleOrdenRechazada.forEach(async (detalle) => {
+        const idProducto = detalle.Productos_idProductos;
+        const cantidad = detalle.cantidad;
+
+        await axios.put(
+          `http://localhost:3000/api/v1/productos/incrementarStock/${idProducto}`,
+          { cantidad },
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
         );
+      });
 
-        setOrdenes(response.data.data);
-        console.log(response.data.data);
-      } catch (error) {
-        console.error(error);
-        setAlertSeverity("error");
-        setAlertMessage("Error al obtener las órdenes de compra");
-        setOpenAlert(true);
-      }
-    };
-
-    fetchOrdenes();
-  }, []);
+      fetchOrdenes();
+    } catch (error) {
+      console.error("Error rechanzado orden:", error);
+    }
+  };
 
   const handleCloseAlert = () => {
     setOpenAlert(false);
@@ -47,9 +85,9 @@ export default function HistoryClient() {
       <Box>
         <Typografy variant="h6" component="h6" gutterBottom align="center">
           Historial de compras
-        </Typografy >
+        </Typografy>
         <Box marginTop={4} marginInline={10}>
-          <TableHistoryClient ordenes={ordenes} />
+          <TableHistoryClient ordenes={ordenes} onReject={handleReject} />
         </Box>
       </Box>
       <AlertMessage

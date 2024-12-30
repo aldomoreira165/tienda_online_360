@@ -514,6 +514,18 @@ begin
 	select * from Productos where idProductos = @idProductos;
 end;
 
+create or alter proc p_incrementarStockProducto
+	@idProductos int,
+	@cantidadProducto int
+as
+begin
+	update Productos
+	set stock = stock + @cantidadProducto
+	where idProductos = @idProductos;
+
+	select * from Productos where idProductos = @idProductos;
+end;
+
 create or alter proc p_insertarProductos
     @categoriaProductos_idCategoriaProductos int,
     @usuarios_idUsuarios int,
@@ -730,14 +742,31 @@ begin
     o.idOrden,
     o.Usuarios_idUsuarios,
     o.Estados_idEstados,
+	e.nombre as 'estado_nombre',
     o.fecha_creacion,
+	o.fecha_entrega,
+	o.total_orden,
+	o.direccion,
     d.Productos_idProductos,
     d.cantidad,
-    d.subtotal
+    d.subtotal,
+	p.nombre,
+	p.foto,
+	p.precio,
+	p.marca,
+	u.idUsuarios,
+	u.correo_electronico
 	from 
 		Orden o
 	inner join 
 		OrdenDetalles d on o.idOrden = d.Orden_idOrden
+	inner join 
+		Productos p on p.idProductos = d.Productos_idProductos
+	inner join
+		Estados e on o.Estados_idEstados = e.idEstados
+	inner join 
+		Usuarios u on o.Usuarios_idUsuarios = u.idUsuarios
+	where o.Estados_idEstados != 15
 	order by 
 		o.fecha_creacion desc;
 end;
@@ -754,6 +783,7 @@ begin
     o.fecha_creacion,
 	o.fecha_entrega,
 	o.total_orden,
+	o.direccion,
     d.Productos_idProductos,
     d.cantidad,
     d.subtotal,
@@ -774,7 +804,43 @@ begin
 		o.fecha_creacion desc;
 end;
 
-EXEC p_obtenerOrdenesUsuario @idUsuarios = 2024;
+select * from Estados;
+
+create or alter proc p_obtenerOrdenesConfirmadas
+as
+begin
+	select 
+    o.idOrden,
+    o.Usuarios_idUsuarios,
+    o.Estados_idEstados,
+	e.nombre as 'estado_nombre',
+    o.fecha_creacion,
+	o.fecha_entrega,
+	o.total_orden,
+	o.direccion,
+    d.Productos_idProductos,
+    d.cantidad,
+    d.subtotal,
+	p.nombre,
+	p.foto,
+	p.precio,
+	p.marca,
+	u.idUsuarios,
+	u.correo_electronico
+	from 
+		Orden o
+	inner join 
+		OrdenDetalles d on o.idOrden = d.Orden_idOrden
+	inner join 
+		Productos p on p.idProductos = d.Productos_idProductos
+	inner join
+		Estados e on o.Estados_idEstados = e.idEstados
+	inner join 
+		Usuarios u on o.Usuarios_idUsuarios = u.idUsuarios
+	where o.Estados_idEstados = 15
+	order by 
+		o.fecha_creacion desc;
+end;
 
 create or alter proc p_obtenerOrdenID
 	@idOrden int
@@ -795,6 +861,41 @@ begin
 	where o.idOrden = @idOrden
 	order by 
 		o.fecha_creacion desc;
+end;
+
+select * from Estados;
+
+create or alter proc p_entregarOrden
+	@idOrden int
+as
+begin
+	update Orden
+	set Estados_idEstados = 1012
+	where idOrden = @idOrden;
+
+	select * from Orden where idOrden = @idOrden;
+end;
+
+create or alter proc p_rechazarOrden
+	@idOrden int
+as
+begin
+	update Orden
+	set Estados_idEstados = 14
+	where idOrden = @idOrden;
+
+	select * from Orden where idOrden = @idOrden;
+end;
+
+create or alter proc p_cancelarOrden
+	@idOrden int
+as
+begin
+	update Orden
+	set Estados_idEstados = 1013
+	where idOrden = @idOrden;
+
+	select * from Orden where idOrden = @idOrden;
 end;
 
 create or alter proc p_actualizarOrden

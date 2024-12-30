@@ -61,16 +61,6 @@ export default function FormCart() {
     defaultValues: initialValues,
   });
 
-  const validateStock = (producto) => {
-    if (producto.cantidad_orden > producto.stock) {
-      setAlertSeverity("error");
-      setAlertMessage(`No hay suficiente stock de ${producto.nombre}. Stock disponible: ${producto.stock}`);
-      setOpenAlert(true);
-      return false;
-    }
-    return true;
-  };
-
   const onSubmit = async (data) => {
     try {
       const idUsuario = localStorage.getItem("idUsuario");
@@ -98,13 +88,6 @@ export default function FormCart() {
         total_orden: totalOrden,
         detalles: detalles,
       };
-
-      // validando stock de productos
-      const isValid = cart.every(validateStock);
-
-      if (!isValid) {
-        return;
-      }
 
       // reduciendo stock de productos
       cart.forEach(async (producto) => {

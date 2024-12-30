@@ -16,12 +16,16 @@ import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import HistoryIcon from '@mui/icons-material/History';
+import CheckIcon from '@mui/icons-material/Check';
 
 export default function AsideBar() {
   const [openProducts, setOpenProducts] = useState(false);
   const [openCategories, setOpenCategories] = useState(false);
   const [openUsers, setOpenUsers] = useState(false);
   const [openClients, setOpenClients] = useState(false);
+  const [openOrders, setOpenOrders] = useState(false);
   const navigate = useNavigate();
 
   const handleClickProducts = () => {
@@ -38,6 +42,10 @@ export default function AsideBar() {
 
   const handleClickClients = () => {
     setOpenClients(!openClients);
+  };
+
+  const handleClickOrders = () => {
+    setOpenOrders(!openOrders);
   };
 
   const handleAddProduct = () => {
@@ -74,6 +82,14 @@ export default function AsideBar() {
 
   const handleModifyClient = () => {
     navigate("/operator/client/modify");
+  };
+
+  const handleConfirmOrders = () => {
+    navigate("/operator/order/confirm");
+  };
+
+  const handleHistoryOrders = () => {
+    navigate("/operator");
   };
 
   return (
@@ -183,6 +199,30 @@ export default function AsideBar() {
               <EditIcon />
             </ListItemIcon>
             <ListItemText primary="Modificar" />
+          </ListItemButton>
+        </List>
+      </Collapse>
+
+      <ListItemButton onClick={handleClickOrders}>
+        <ListItemIcon>
+          <LocalShippingIcon />
+        </ListItemIcon>
+        <ListItemText primary="Pedidos" />
+        {openOrders ? <ExpandLess /> : <ExpandMore />}
+      </ListItemButton>
+      <Collapse in={openOrders} timeout="auto" unmountOnExit>
+        <List component="div" disablePadding>
+          <ListItemButton sx={{ pl: 4 }} onClick={handleConfirmOrders}>
+            <ListItemIcon>
+              <CheckIcon />
+            </ListItemIcon>
+            <ListItemText primary="Confirmar pedidos" />
+          </ListItemButton>
+          <ListItemButton sx={{ pl: 4 }} onClick={handleHistoryOrders}>
+            <ListItemIcon>
+              <HistoryIcon />
+            </ListItemIcon>
+            <ListItemText primary="Historial de pedidos" />
           </ListItemButton>
         </List>
       </Collapse>
