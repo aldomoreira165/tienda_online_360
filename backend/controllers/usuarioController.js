@@ -52,7 +52,6 @@ const crearUsuario = async (req, res) => {
 const actualizarUsuario = async (req, res) => {
   const { id } = req.params;
   const {
-    cambioCliente,
     estados_idEstados,
     correo_electronico,
     nombre_completo,
@@ -67,7 +66,6 @@ const actualizarUsuario = async (req, res) => {
     const [results, _] = await sequelize.query(
       `EXEC p_actualizarUsuario 
             @idUsuarios = ${parseInt(id, 10)},
-            @cambioCliente = ${parseInt(cambioCliente, 10)},
             @estados_idEstados = ${parseInt(estados_idEstados, 10)},
             @correo_electronico = '${correo_electronico}',
             @nombre_completo = '${nombre_completo}',
@@ -160,9 +158,85 @@ const obtenerUsuarioEmail = async (req, res) => {
   }
 };
 
+const obtenerUsuarioActivo = async (req, res) => {
+  try {
+    const [results, _] = await sequelize.query(`EXEC p_obtenerUsuariosActivos`);
+
+    res.status(200).json({
+      estado: "exito",
+      data: results,
+    });
+  } catch (error) {
+    res.status(400).json({
+      estado: "error",
+      mensajesss: error.message,
+    });
+  }
+}
+
+const obtenerUsuarioInactivo = async (req, res) => {
+  try {
+    const [results, _] = await sequelize.query(`EXEC p_obtenerUsuariosInactivos`);
+
+    res.status(200).json({
+      estado: "exito",
+      data: results,
+    });
+  } catch (error) {
+    res.status(400).json({
+      estado: "error",
+      mensaje: error.message,
+    });
+  }
+};
+
+const activarUsuario = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [results, _] = await sequelize.query(
+      `EXEC p_activarUsuario @idUsuarios = ${parseInt(id, 10)}`
+    );
+
+    res.status(200).json({
+      estado: "exito",
+      data: results,
+    });
+  } catch (error) {
+    res.status(400).json({
+      estado: "error",
+      mensaje: error.message,
+    });
+  }
+};
+
+const inactivarUsuario = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [results, _] = await sequelize.query(
+      `EXEC p_inactivarUsuario @idUsuarios = ${parseInt(id, 10)}`
+    );
+
+    res.status(200).json({
+      estado: "exito",
+      data: results,
+    });
+  } catch (error) {
+    res.status(400).json({
+      estado: "error",
+      mensaje: error.message,
+    });
+  }
+}; 
+
 module.exports = {
   crearUsuario,
   actualizarUsuario,
   obtenerUsuarioId,
   obtenerUsuarioEmail,
+  obtenerUsuarioActivo,
+  obtenerUsuarioInactivo,
+  activarUsuario,
+  inactivarUsuario,
 };

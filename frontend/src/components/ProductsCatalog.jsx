@@ -36,9 +36,7 @@ export default function ProductsCatalog() {
         {products.map((product) => (
           <ProductCard 
             key={product.idProductos}
-            nombre={product.nombre}
-            foto={product.foto}
-            stock={product.stock}
+            producto={product}
            />
         ))}
       </Grid>

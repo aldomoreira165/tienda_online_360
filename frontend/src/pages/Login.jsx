@@ -79,9 +79,8 @@ export default function Login() {
         localStorage.setItem("emailUsuario", correo);
       } else {
         setAlertSeverity("warning");
-        setAlertMessage("No se reconoce el rol del usuario.");
+        setAlertMessage("El usuario no tiene permisos para acceder.");
         setOpenAlert(true);
-        console.warn("No existe el rol");
       }
     } catch (error) {
       setAlertSeverity("error");

@@ -3,7 +3,8 @@ const express = require('express');
 const { 
     actualizarCliente, 
     crearCliente, 
-    obtenerClientes 
+    obtenerClientes,
+    obtenerClienteId
 } = require('./../controllers/clienteController');
 
 const { verificarAuth } = require('./../middlewares/verificarAutenticacion');
@@ -17,6 +18,7 @@ router
 
 router
     .route('/:id')
+    .get(verificarAuth, obtenerClienteId)
     .put(verificarAuth, actualizarCliente)
 
 module.exports = router;

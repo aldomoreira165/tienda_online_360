@@ -213,10 +213,6 @@ begin
 end;
 -- <fin rol>
 
--- <inicio cliente>
-
--- <fin cliente>
-
 -- <inicio usuario>
 create or alter proc p_obtenerUsuarioId
 	@idUsuarios int
@@ -230,6 +226,40 @@ create or alter proc p_obtenerUsuarioEmail
 as
 begin
 	select * from Usuarios where correo_electronico = @correo_electronico;
+end;
+
+create or alter proc p_activarUsuario
+ @idUsuarios int
+as
+begin
+	update Usuarios
+	set Estados_idEstados = 1
+	where idUsuarios = @idUsuarios;
+
+	select * from Usuarios where idUsuarios = @idUsuarios;
+end;
+
+create or alter proc p_inactivarUsuario
+ @idUsuarios int
+as
+begin
+	update Usuarios
+	set Estados_idEstados = 2
+	where idUsuarios = @idUsuarios;
+
+	select * from Usuarios where idUsuarios = @idUsuarios;
+end;
+
+create or alter proc p_obtenerUsuariosActivos
+as
+begin
+	select * from Usuarios where Estados_idEstados = 1;
+end;
+
+create or alter proc p_obtenerUsuariosInactivos
+as 
+begin
+	select * from Usuarios where Estados_idEstados = 2;
 end;
 
 create or alter proc p_insertarUsuario
@@ -299,6 +329,16 @@ end;
 -- <fin usuario>
 
 -- <inicio cliente>
+select * from Clientes;
+
+create or alter proc p_obtenerClienteID
+	@idClientes int
+as
+begin
+	select * from Clientes where idClientes = @idClientes;
+end;
+	
+
 create or alter proc p_obtenerClientes
 as
 begin
@@ -462,6 +502,30 @@ begin
 	select * from Productos where Estados_idEstados = 1;
 end;
 
+create or alter proc p_reducirStockProducto
+	@idProductos int,
+	@cantidadProducto int
+as
+begin
+	update Productos
+	set stock = stock - @cantidadProducto
+	where idProductos = @idProductos;
+
+	select * from Productos where idProductos = @idProductos;
+end;
+
+create or alter proc p_incrementarStockProducto
+	@idProductos int,
+	@cantidadProducto int
+as
+begin
+	update Productos
+	set stock = stock + @cantidadProducto
+	where idProductos = @idProductos;
+
+	select * from Productos where idProductos = @idProductos;
+end;
+
 create or alter proc p_insertarProductos
     @categoriaProductos_idCategoriaProductos int,
     @usuarios_idUsuarios int,
@@ -579,7 +643,6 @@ end;
 create or alter proc p_insertarOrdenConDetalle
     @Usuarios_idUsuarios int,
     @Estados_idEstados int,
-    @fechaCreacion datetime,
     @nombre_completo varchar(100),
     @direccion varchar(545),
     @telefono varchar(45),
@@ -618,7 +681,7 @@ begin
         values (
             @Usuarios_idUsuarios, 
             @Estados_idEstados, 
-            @fechaCreacion, 
+            getdate(), 
             @nombre_completo, 
             @direccion, 
             @telefono, 
@@ -679,14 +742,102 @@ begin
     o.idOrden,
     o.Usuarios_idUsuarios,
     o.Estados_idEstados,
+	e.nombre as 'estado_nombre',
     o.fecha_creacion,
+	o.fecha_entrega,
+	o.total_orden,
+	o.direccion,
     d.Productos_idProductos,
     d.cantidad,
-    d.subtotal
+    d.subtotal,
+	p.nombre,
+	p.foto,
+	p.precio,
+	p.marca,
+	u.idUsuarios,
+	u.correo_electronico
 	from 
 		Orden o
 	inner join 
 		OrdenDetalles d on o.idOrden = d.Orden_idOrden
+	inner join 
+		Productos p on p.idProductos = d.Productos_idProductos
+	inner join
+		Estados e on o.Estados_idEstados = e.idEstados
+	inner join 
+		Usuarios u on o.Usuarios_idUsuarios = u.idUsuarios
+	where o.Estados_idEstados != 15
+	order by 
+		o.fecha_creacion desc;
+end;
+
+create or alter proc p_obtenerOrdenesUsuario
+	@idUsuarios int
+as
+begin
+	select 
+    o.idOrden,
+    o.Usuarios_idUsuarios,
+    o.Estados_idEstados,
+	e.nombre as 'estado_nombre',
+    o.fecha_creacion,
+	o.fecha_entrega,
+	o.total_orden,
+	o.direccion,
+    d.Productos_idProductos,
+    d.cantidad,
+    d.subtotal,
+	p.nombre,
+	p.foto,
+	p.precio,
+	p.marca
+	from 
+		Orden o
+	inner join 
+		OrdenDetalles d on o.idOrden = d.Orden_idOrden
+	inner join 
+		Productos p on p.idProductos = d.Productos_idProductos
+	inner join
+		Estados e on o.Estados_idEstados = e.idEstados
+	where o.Usuarios_idUsuarios = @idUsuarios
+	order by 
+		o.fecha_creacion desc;
+end;
+
+select * from Estados;
+
+create or alter proc p_obtenerOrdenesConfirmadas
+as
+begin
+	select 
+    o.idOrden,
+    o.Usuarios_idUsuarios,
+    o.Estados_idEstados,
+	e.nombre as 'estado_nombre',
+    o.fecha_creacion,
+	o.fecha_entrega,
+	o.total_orden,
+	o.direccion,
+    d.Productos_idProductos,
+    d.cantidad,
+    d.subtotal,
+	p.nombre,
+	p.foto,
+	p.precio,
+	p.marca,
+	u.idUsuarios,
+	u.correo_electronico
+	from 
+		Orden o
+	inner join 
+		OrdenDetalles d on o.idOrden = d.Orden_idOrden
+	inner join 
+		Productos p on p.idProductos = d.Productos_idProductos
+	inner join
+		Estados e on o.Estados_idEstados = e.idEstados
+	inner join 
+		Usuarios u on o.Usuarios_idUsuarios = u.idUsuarios
+	where o.Estados_idEstados = 15
 	order by 
 		o.fecha_creacion desc;
 end;
@@ -710,6 +861,41 @@ begin
 	where o.idOrden = @idOrden
 	order by 
 		o.fecha_creacion desc;
+end;
+
+select * from Estados;
+
+create or alter proc p_entregarOrden
+	@idOrden int
+as
+begin
+	update Orden
+	set Estados_idEstados = 1012
+	where idOrden = @idOrden;
+
+	select * from Orden where idOrden = @idOrden;
+end;
+
+create or alter proc p_rechazarOrden
+	@idOrden int
+as
+begin
+	update Orden
+	set Estados_idEstados = 14
+	where idOrden = @idOrden;
+
+	select * from Orden where idOrden = @idOrden;
+end;
+
+create or alter proc p_cancelarOrden
+	@idOrden int
+as
+begin
+	update Orden
+	set Estados_idEstados = 1013
+	where idOrden = @idOrden;
+
+	select * from Orden where idOrden = @idOrden;
 end;
 
 create or alter proc p_actualizarOrden
@@ -767,10 +953,6 @@ as
 begin
 	select * from Tokens where token = @token;
 end;
-
-select * from Tokens;
-select * from Productos;
-select * from CategoriaProductos;
 -- <fin tokens>
 
 -- creacion de vistas

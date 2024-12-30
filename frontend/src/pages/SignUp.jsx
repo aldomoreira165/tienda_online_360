@@ -3,6 +3,7 @@ import Box from "@mui/material/Box";
 import PropTypes from "prop-types";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
+import Typography from "@mui/material/Typography";
 import AppBarBack from "./../components/AppBarBack";
 import FormClient from "./../components/FormClient";
 import FormUser from "./../components/FormUser";
@@ -58,9 +59,15 @@ export default function SignUp() {
           </Tabs>
         </Box>
         <CustomTabPanel value={value} index={0}>
+          <Typography variant="h6" component="h1" gutterBottom align="center">
+            Registro de Usuarios
+          </Typography>
           <FormUser rol={1} />
         </CustomTabPanel>
         <CustomTabPanel value={value} index={1}>
+          <Typography variant="h6" component="h1" gutterBottom align="center">
+            Registro de Clientes
+          </Typography>
           <FormClient />
         </CustomTabPanel>
       </Box>

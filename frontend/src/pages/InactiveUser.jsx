@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -7,45 +7,44 @@ import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
 import FormControl from "@mui/material/FormControl";
-import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
+import InputLabel from "@mui/material/InputLabel";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
 import AlertMessage from "./../components/AlertMessage";
 
-export default function AddCategory() {
+// valores iniciales del formulario
+const initialValues = {
+  usuario: "",
+};
+
+export default function InactiveUser() {
+  const [activeUsers, setActiveUsers] = useState([]);
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState("success");
   const [openAlert, setOpenAlert] = useState(false);
 
   // configuraciones de validacion de formulario
   const schema = yup.object().shape({
-    name: yup
-      .string()
-      .max(45, "La categoría no debe exceder los 45 caracteres")
-      .required("El nombre es requerido"),
+    usuario: yup.string().required("El usuario es requerido"),
   });
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    watch,
     reset,
   } = useForm({
     resolver: yupResolver(schema),
+    defaultValues: initialValues,
   });
 
-  const onSubmit = async (data) => {
+  const fetchActiveUsers = async () => {
     try {
-      const dataCategory = {
-        usuario_id: localStorage.getItem("idUsuario"),
-        nombre: data.name,
-        estado_id: 1,
-        fecha_creacion: new Date().toISOString(),
-      };
-
-      const response = await axios.post(
-        "http://localhost:3000/api/v1/categorias",
-        dataCategory,
+      const response = await axios.get(
+        "http://localhost:3000/api/v1/usuarios/activos",
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -53,18 +52,43 @@ export default function AddCategory() {
         }
       );
 
-      if (response.status === 201 || response.status === 200) {
+      setActiveUsers(response.data.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchActiveUsers();
+  }, []);
+
+  const onSubmit = async (data) => {
+    try {
+      const idUsuario = data.usuario;
+
+      const response = await axios.put(
+        `http://localhost:3000/api/v1/usuarios/inactivar/${parseInt(
+          idUsuario,
+          10
+        )}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
         setAlertSeverity("success");
-        setAlertMessage("Categoría agregada correctamente");
+        setAlertMessage("Usuario desactivado correctamente");
         setOpenAlert(true);
-        reset();
+        reset(initialValues);
+        fetchActiveUsers();
       }
     } catch (error) {
       setAlertSeverity("error");
-      setAlertMessage(
-        error?.response?.data?.message ||
-          "Ocurrió un error al agregar la categoría"
-      );
+      setAlertMessage(error?.response?.data?.mensaje || "Ocurrió un error");
       setOpenAlert(true);
     }
   };
@@ -79,7 +103,7 @@ export default function AddCategory() {
         <Box>
           <Box marginTop={6}>
             <Typography variant="h6" component="h6" gutterBottom align="center">
-              Agregar categoría
+              Desactivar usuario
             </Typography>
           </Box>
           <Box
@@ -96,16 +120,34 @@ export default function AddCategory() {
               <Box padding={3} sx={{ width: "100%" }}>
                 <FormControl fullWidth sx={{ height: "100%", width: "100%" }}>
                   <form onSubmit={handleSubmit(onSubmit)}>
-                    <TextField
-                      label="Nombre"
-                      variant="outlined"
-                      margin="normal"
-                      type="text"
-                      fullWidth
-                      {...register("name")}
-                      error={!!errors.name}
-                      helperText={errors.name?.message}
-                    />
+                    <FormControl fullWidth margin="normal">
+                      <InputLabel id="usuario-label">
+                        Usuarios activos
+                      </InputLabel>
+                      <Select
+                        id="select-usuario"
+                        labelId="usuario-label"
+                        label="Usuarios activos"
+                        {...register("usuario")}
+                        value={watch("usuario")}
+                        error={!!errors.usuario}
+                      >
+                        {activeUsers.map((activeUser) => (
+                          <MenuItem
+                            key={activeUser.idUsuarios}
+                            value={activeUser.idUsuarios}
+                          >
+                            {activeUser.nombre_completo} (
+                            {activeUser.correo_electronico})
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      {errors.usuario && (
+                        <Typography variant="caption" color="error">
+                          {errors.usuario.message}
+                        </Typography>
+                      )}
+                    </FormControl>
 
                     <Box sx={{ display: "flex", justifyContent: "center" }}>
                       <Button
@@ -115,7 +157,7 @@ export default function AddCategory() {
                         sx={{ marginTop: 2, width: "25%" }}
                         type="submit"
                       >
-                        Agregar categoría
+                        Desactivar
                       </Button>
                     </Box>
                   </form>
