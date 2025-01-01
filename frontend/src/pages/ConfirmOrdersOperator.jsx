@@ -46,8 +46,6 @@ export default function ConfirmOrdersOperator() {
   };
 
   const handleReject = async (idOrden) => {
-    console.log("Rechazando orden", idOrden);
-    console.log(ordenes);
     try {
       await axios.put(
         `http://localhost:3000/api/v1/ordenes/rechazar/${idOrden}`,

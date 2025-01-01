@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
@@ -12,7 +14,7 @@ import MenuItem from "@mui/material/MenuItem";
 import logo from "./../assets/images/tiendita_logo.jpg";
 import AlertMessage from "./AlertMessage";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+
 
 const settings = ["Perfil", "Logout"];
 
@@ -27,7 +29,9 @@ function AppBarOperator() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const idUsuario = localStorage.getItem("idUsuario");
+        const token = localStorage.getItem("token");
+        const decodedToken = jwtDecode(token);
+        const idUsuario = decodedToken.id;
 
         const response = await axios.get(
           `http://localhost:3000/api/v1/usuarios/${idUsuario}`,
@@ -68,9 +72,6 @@ function AppBarOperator() {
       });
 
       localStorage.removeItem("token");
-      localStorage.removeItem("idUsuario");
-      localStorage.removeItem("rolUsuario");
-      localStorage.removeItem("emailUsuario");
       setAlertSeverity("success");
       setAlertMessage("Cerrando sesión. Redirigiendo...");
       setOpenAlert(true);

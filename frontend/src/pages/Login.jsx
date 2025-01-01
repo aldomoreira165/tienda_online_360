@@ -57,7 +57,7 @@ export default function Login() {
         }
       );
 
-      const { id, rol, estado, correo } = response.data.data;
+      const { rol, estado } = response.data.data;
       const token = response.data.token;
 
       // seteando alerta
@@ -68,15 +68,9 @@ export default function Login() {
       if (rol === 1 && estado === 1) {
         setTimeout(() => navigate("/client"), 2000);
         localStorage.setItem("token", token);
-        localStorage.setItem("idUsuario", id);
-        localStorage.setItem("rolUsuario", rol);
-        localStorage.setItem("emailUsuario", correo);
       } else if (rol === 2 && estado === 1) {
         setTimeout(() => navigate("/operator"), 2000);
         localStorage.setItem("token", token);
-        localStorage.setItem("idUsuario", id);
-        localStorage.setItem("rolUsuario", rol);
-        localStorage.setItem("emailUsuario", correo);
       } else {
         setAlertSeverity("warning");
         setAlertMessage("El usuario no tiene permisos para acceder.");
