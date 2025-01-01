@@ -12,7 +12,7 @@ const {
     cancelarOrden
 } = require('./../controllers/ordenController');
 
-const { verificarAuth } = require('./../middlewares/verificarAutenticacion');
+const { verificarAuth, verificarRol } = require('./../middlewares/verificarAutenticacion');
 
 const router = express.Router();
 
@@ -20,32 +20,32 @@ router.use(verificarAuth);
 
 router
     .route('/')
-    .get(obtenerOrdenes)
-    .post(crearOrdenConDetalle)
+    .get(verificarRol([2]), obtenerOrdenes)
+    .post(verificarRol([1]), crearOrdenConDetalle)
 
 router
     .route('/confirmadas')
-    .get(obtenerOrdenesConfirmadas)
+    .get(verificarRol([2]), obtenerOrdenesConfirmadas)
 
 router
     .route('/:id')
-    .get(obtenerOrdenId)
-    .put(actualizarOrden)
+    .get(verificarRol([1, 2]), obtenerOrdenId)
+    .put(verificarRol([1, 2]), actualizarOrden)
 
 router
     .route('/usuario/:id')
-    .get(obtenerOrdenesUsuario)
+    .get(verificarRol([1]), obtenerOrdenesUsuario)
 
 router
     .route('/entregar/:id')
-    .put(entregarOrden)
+    .put(verificarRol([2]), entregarOrden)
 
 router
     .route('/rechazar/:id')
-    .put(rechazarOrden)
+    .put(verificarRol([2]), rechazarOrden)
 
 router
     .route('/cancelar/:id')
-    .put(cancelarOrden)
+    .put(verificarRol([1]), cancelarOrden)
 
 module.exports = router;

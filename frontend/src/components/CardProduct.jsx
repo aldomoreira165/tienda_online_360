@@ -11,6 +11,7 @@ import Box from "@mui/material/Box";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import SellIcon from "@mui/icons-material/Sell";
 import PublicIcon from "@mui/icons-material/Public";
+import PaymentsIcon from '@mui/icons-material/Payments';
 import useCart from "./../hooks/useCart";
 
 function CardProduct({ producto }) {
@@ -63,6 +64,16 @@ function CardProduct({ producto }) {
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <Typography variant="body2" color="text.secondary">
                 <SellIcon />
+              </Typography>
+
+              <Typography variant="body2" color="text.secondary">
+                Categoría: {producto.nombre_categoria}
+              </Typography>
+            </Box>
+
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Typography variant="body2" color="text.secondary">
+                <PaymentsIcon />
               </Typography>
 
               <Typography variant="body2" color="text.secondary">

@@ -63,7 +63,6 @@ export default function FormCart() {
 
   const onSubmit = async (data) => {
     try {
-      const idUsuario = localStorage.getItem("idUsuario");
       const estadoCompra = 15;
       const nombreCompleto = data.nombre;
       const direccion = data.direccion;
@@ -78,7 +77,6 @@ export default function FormCart() {
       }));
 
       const dataOrden = {
-        Usuarios_idUsuarios: idUsuario,
         Estados_idEstados: estadoCompra,
         nombre_completo: nombreCompleto,
         direccion: direccion,

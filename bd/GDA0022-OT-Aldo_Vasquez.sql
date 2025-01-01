@@ -499,8 +499,23 @@ end;
 create or alter proc p_obtenerProductosActivos
 as
 begin
-	select * from Productos where Estados_idEstados = 1;
+	select 
+		p.idProductos,
+		p.nombre,
+		p.marca,
+		p.foto,
+		p.stock,
+		p.precio,
+		c.nombre as 'nombre_categoria' 
+	from 
+	Productos p inner join CategoriaProductos c
+	on p.CategoriaProductos_idCategoriaProductos = c.idCategoriaProductos
+	where p.Estados_idEstados = 1;
 end;
+
+EXEC p_obtenerProductosActivos;
+
+select * from CategoriaProductos;
 
 create or alter proc p_reducirStockProducto
 	@idProductos int,

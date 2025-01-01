@@ -33,11 +33,16 @@ const login = async (req, res) => {
         const usuarioToken = {
             id: results[0].idUsuarios,
             rol: results[0].Rol_idRol,
-            email: results[0].correo_electronico
         };
-        
+
+        // generando token
         const token = await generarToken(usuarioToken);
-        
+
+        // agregando usuario al request
+        req.usuario = usuarioToken;
+
+        console.log("request usuario", req.usuario);
+           
         await insertarToken(token);
 
         res.status(200).json({

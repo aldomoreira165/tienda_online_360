@@ -37,12 +37,14 @@ const obtenerCategoriaId = async (req, res) => {
 };
 
 const crearCategoria = async (req, res) => {
-    const { usuario_id, nombre, estado_id, fecha_creacion } = req.body;
+    console.log("req.usuario desde crearCategoria", req.usuario);
+    const { nombre, estado_id, fecha_creacion } = req.body;
+    const { id } = req.usuario;
 
     try {
         const [results, _] = await sequelize.query(
             `EXEC p_insertarCategoriaProductos 
-            @usuarios_idUsuarios = ${parseInt(usuario_id, 10)},
+            @usuarios_idUsuarios = ${parseInt(id, 10)},
             @nombre = '${nombre}',
             @estados_idEstados = ${parseInt(estado_id, 10)},
             @fecha_creacion = '${fecha_creacion}'`

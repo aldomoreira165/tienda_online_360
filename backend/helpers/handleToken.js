@@ -7,7 +7,6 @@ const generarToken = async(user) => {
         {
             id: user.id,
             rol: user.rol,
-            email: user.email
         },
         process.env.JWT_SECRET,
         {

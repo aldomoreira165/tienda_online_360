@@ -4,17 +4,17 @@ const { crearEstado, obtenerEstados, obtenerEstadoId } = require('./../controlle
 
 const router = express.Router();
 
-const { verificarAuth } = require('./../middlewares/verificarAutenticacion');
+const { verificarAuth, verificarRol } = require('./../middlewares/verificarAutenticacion');
 
 router.use(verificarAuth);
 
 router
     .route('/')
-    .get(obtenerEstados)
-    .post(crearEstado)
+    .get(verificarRol([2]), obtenerEstados)
+    .post(verificarRol([2]), crearEstado);
 
 router
     .route('/:id')
-    .get(obtenerEstadoId)
+    .get(verificarRol([2]), obtenerEstadoId)
 
 module.exports = router;
