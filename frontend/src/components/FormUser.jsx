@@ -69,16 +69,36 @@ export default function FormUser({ rol }) {
 
   const fetchClientes = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/api/v1/clientes");
+      const response = await axios.get("http://localhost:3000/api/v1/clientes", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
       setClientes(response.data.data);
     } catch (error) {
       console.error(error);
     }
   };
-
+  
   useEffect(() => {
     fetchClientes();
   }, []);
+
+  const validateAge = (birthdate) => {
+    const today = new Date();
+    const birthDate = new Date(birthdate);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDifference = today.getMonth() - birthDate.getMonth();
+
+    if (
+      monthDifference < 0 ||
+      (monthDifference === 0 && today.getDate() < birthDate.getDate())
+    ) {
+      age--;
+    }
+    return age;
+  };
 
   const onSubmit = async (data) => {
     try {
@@ -92,6 +112,14 @@ export default function FormUser({ rol }) {
         estado_id: 1,
         cliente_id: data.cliente,
       };
+
+      // verificar si el usuario es mayor de 18 años
+      if (validateAge(data.fecha_nacimiento) < 18) {
+        setAlertSeverity("error");
+        setAlertMessage("El usuario debe ser mayor de 18 años.");
+        setOpenAlert(true);
+        return;
+      }
 
       const response = await axios.post(
         "http://localhost:3000/api/v1/usuarios",
@@ -129,17 +157,12 @@ export default function FormUser({ rol }) {
           padding: "2rem",
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",       
+          justifyContent: "center",
         }}
       >
         <Box sx={{ width: "100%", height: "100%" }}>
-          <Paper
-            elevation={8}
-            sx={{ height: "100%", width: "100%"}}
-          >
-            <Box
-              padding={3}
-            >
+          <Paper elevation={8} sx={{ height: "100%", width: "100%" }}>
+            <Box padding={3}>
               <form onSubmit={handleSubmit(onSubmit)}>
                 <Grid container spacing={2}>
                   <Grid item xs={6}>
@@ -228,7 +251,7 @@ export default function FormUser({ rol }) {
                           labelId="cliente-label"
                           label="Cliente"
                           fullWidth
-                          disabled = {rol === 2 }
+                          disabled={rol === 2}
                           value={watch("cliente")}
                           {...register("cliente")}
                           error={!!errors.cliente}
@@ -238,7 +261,7 @@ export default function FormUser({ rol }) {
                               key={cliente.idClientes}
                               value={cliente.idClientes}
                             >
-                              {`${cliente.nombre_comercial} - ${cliente.razon_social}`}
+                              {`${cliente.nombreComercial} - ${cliente.razonSocial}`}
                             </MenuItem>
                           ))}
                         </Select>

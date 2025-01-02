@@ -96,10 +96,6 @@ export default function Login() {
     }
   };
 
-  const handleSignUpClick = () => {
-    navigate("/signup");
-  };
-
   const handleCloseAlert = () => {
     setOpenAlert(false);
   };
@@ -177,7 +173,7 @@ export default function Login() {
 
                 <Button
                   variant="contained"
-                  color="success"
+                  color="info"
                   fullWidth
                   sx={{ marginTop: 2 }}
                   type="submit"
@@ -185,16 +181,6 @@ export default function Login() {
                   Iniciar Sesión
                 </Button>
               </form>
-
-              <Button
-                variant="contained"
-                color="primary"
-                fullWidth
-                onClick={handleSignUpClick}
-                sx={{ marginTop: 2 }}
-              >
-                Registrarse
-              </Button>
             </Paper>
           </Box>
         </Grid>

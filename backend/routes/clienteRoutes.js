@@ -11,6 +11,9 @@ const { verificarAuth, verificarRol } = require('./../middlewares/verificarAuten
 
 const router = express.Router();
 
+router.use(verificarAuth);
+router.use(verificarRol([2]));
+
 router
     .route('/')
     .get(obtenerClientes)
@@ -18,7 +21,7 @@ router
 
 router
     .route('/:id')
-    .get(verificarAuth, verificarRol([2]), obtenerClienteId)
-    .put(verificarAuth, verificarRol([2]), actualizarCliente)
+    .get(obtenerClienteId)
+    .put(actualizarCliente)
 
 module.exports = router;

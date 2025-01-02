@@ -79,9 +79,44 @@ const obtenerClientes = async (req, res) => {
   try {
     const [results, _] = await sequelize.query(`EXEC p_obtenerClientes`);
 
+    const clientes = [];
+
+    results.forEach((cliente) => {
+      const clienteExistente = clientes.find(c => c.idClientes === cliente.idClientes);
+      if (clienteExistente) {
+        clienteExistente.usuarios.push({
+          idUsuario: cliente.id_usuario,
+          nombreUsuario: cliente.nombre_usuario,
+          correoUsuario: cliente.correo_usuario,
+        })
+      } else {
+        let usuariosCliente = [];
+
+        if (cliente.id_usuario !== null) {
+          usuariosCliente = [
+            {
+              idUsuario: cliente.id_usuario,
+              nombreUsuario: cliente.nombre_usuario,
+              correoUsuario: cliente.correo_usuario,
+            }
+          ]
+        }
+
+        clientes.push({
+          idClientes: cliente.idClientes,
+          razonSocial: cliente.razon_social,
+          nombreComercial: cliente.nombre_comercial,
+          direccionEntrega: cliente.direccion_entrega,
+          telefono: cliente.telefono,
+          correoElectronico: cliente.email,
+          usuarios: usuariosCliente,
+        });
+      }
+    });
+    
     res.status(200).json({
       estado: "exito",
-      data: results,
+      data: clientes,
     });
   } catch (error) {
     res.status(400).json({

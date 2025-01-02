@@ -84,6 +84,10 @@ export default function AsideBar() {
     navigate("/operator/client/modify");
   };
 
+  const handleClientesData = () => {
+    navigate("/operator/clients");
+  };
+
   const handleConfirmOrders = () => {
     navigate("/operator/order/confirm");
   };
@@ -199,6 +203,12 @@ export default function AsideBar() {
               <EditIcon />
             </ListItemIcon>
             <ListItemText primary="Modificar" />
+          </ListItemButton>
+          <ListItemButton sx={{ pl: 4 }} onClick={handleClientesData}>
+            <ListItemIcon>
+              <HistoryIcon />
+            </ListItemIcon>
+            <ListItemText primary="Histórico de clientes" />
           </ListItemButton>
         </List>
       </Collapse>

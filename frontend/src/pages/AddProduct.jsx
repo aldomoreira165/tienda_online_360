@@ -85,7 +85,8 @@ export default function AddProduct() {
           },
         }
       );
-      setCategorias(response.data.data);
+      const categoriasActivas = response.data.data.filter(cat => cat.Estados_idEstados === 1);
+      setCategorias(categoriasActivas);
     } catch (error) {
       console.warn(error);
     }

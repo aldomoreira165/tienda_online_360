@@ -2,6 +2,11 @@ create database GDA0022OTAldoVasquez;
 
 use GDA0022OTAldoVasquez;
 
+select * from Usuarios;
+truncate table Tokens;
+select * from Tokens;
+select * from CategoriaProductos;
+
 -- creacion de tablas
 create table Productos(
 	idProductos int identity(1, 1), 
@@ -329,20 +334,30 @@ end;
 -- <fin usuario>
 
 -- <inicio cliente>
-select * from Clientes;
-
 create or alter proc p_obtenerClienteID
 	@idClientes int
 as
 begin
 	select * from Clientes where idClientes = @idClientes;
 end;
-	
 
+select * from Usuarios;
+	
 create or alter proc p_obtenerClientes
 as
 begin
-	select * from Clientes;
+	select 
+	c.idClientes,
+	c.razon_social,
+	c.nombre_comercial,
+	c.direccion_entrega,
+	c.telefono,
+	c.email,
+	u.idUsuarios as 'id_usuario',
+	u.correo_electronico as 'correo_usuario',
+	u.nombre_completo as 'nombre_usuario'
+	from
+		Clientes c left join Usuarios u on c.idClientes = u.Clientes_idClientes;
 end;
 
 create or alter proc p_insertarCliente
@@ -446,35 +461,57 @@ create or alter proc p_actualizarCategoria
     @estados_idEstados int
 as
 begin
-    -- Validando que la categoría existe
-    if not exists (select 1 from CategoriaProductos where idCategoriaProductos = @idCategoriaProductos)
-    begin
-        throw 50001, 'La categoría especificada no existe.', 1;
-    end;
+    begin try
+        begin transaction;
 
-    -- Validando que el nombre no exista en otra categoría
-    if exists (select 1 from CategoriaProductos 
-               where nombre = @nombre and idCategoriaProductos != @idCategoriaProductos)
-    begin
-        throw 50002, 'El nombre de la categoría ya existe.', 1;
-    end;
+        -- Validando que la categoría existe
+        if not exists (select 1 from CategoriaProductos where idCategoriaProductos = @idCategoriaProductos)
+        begin
+            throw 50001, 'La categoría especificada no existe.', 1;
+        end;
 
-    -- Validando que el estado exista
-    if not exists (select 1 from Estados where idEstados = @estados_idEstados)
-    begin
-        throw 50003, 'El estado especificado no existe.', 1;
-    end;
+        -- Validando que el nombre no exista en otra categoría
+        if exists (select 1 from CategoriaProductos 
+                   where nombre = @nombre and idCategoriaProductos != @idCategoriaProductos)
+        begin
+            throw 50002, 'El nombre de la categoría ya existe.', 1;
+        end;
 
-    update CategoriaProductos
-    set 
-        nombre = @nombre,
-        Estados_idEstados = @estados_idEstados
-    where 
-        idCategoriaProductos = @idCategoriaProductos;
+        -- Validando que el estado exista
+        if not exists (select 1 from Estados where idEstados = @estados_idEstados)
+        begin
+            throw 50003, 'El estado especificado no existe.', 1;
+        end;
 
-    select * from CategoriaProductos where idCategoriaProductos = @idCategoriaProductos;
+        update CategoriaProductos
+        set 
+            nombre = @nombre,
+            Estados_idEstados = @estados_idEstados
+        where 
+            idCategoriaProductos = @idCategoriaProductos;
+
+        declare @estadoInactivo int = 2;
+        
+        if @estados_idEstados = @estadoInactivo
+        begin
+            update Productos
+            set 
+                Estados_idEstados = @estadoInactivo
+            where 
+                CategoriaProductos_idCategoriaProductos = @idCategoriaProductos;
+        end;
+
+        commit transaction;
+
+        select * from CategoriaProductos where idCategoriaProductos = @idCategoriaProductos;
+    end try
+    begin catch
+        if @@TRANCOUNT > 0
+            rollback transaction;
+
+        throw;
+    end catch
 end;
-
 -- <fin categorias>
 
 -- <inicio productos>

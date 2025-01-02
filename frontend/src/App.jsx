@@ -13,6 +13,7 @@ import ModifyCategory from "./pages/ModifyCategory";
 import AddUser from "./pages/AddUser";
 import ActiveUser from "./pages/ActiveUser";
 import InactiveUser from "./pages/InactiveUser";
+import ClientsData from "./pages/ClientsData";
 import AddClient from "./pages/AddClient";
 import ModifyClient from "./pages/ModifyClient";
 import Cart from "./pages/Cart";
@@ -47,6 +48,7 @@ export default function App() {
             <Route path="user/add" element={<AddUser />} />
             <Route path="user/active" element={<ActiveUser />} />
             <Route path="user/inactive" element={<InactiveUser />} />
+            <Route path="clients" element={<ClientsData />} />
             <Route path="client/add" element={<AddClient />} />
             <Route path="client/modify" element={<ModifyClient />} />
             <Route path="order/confirm" element={<ConfirmOrdersOperator />} />
