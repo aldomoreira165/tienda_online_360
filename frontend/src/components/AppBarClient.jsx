@@ -16,6 +16,7 @@ import MenuItem from "@mui/material/MenuItem";
 import logo from "./../assets/images/tiendita_logo.jpg";
 import AlertMessage from "./AlertMessage";
 import { useNavigate } from "react-router-dom";
+import useUser from "../hooks/useUser";
 
 const pages = ["Productos", "Carrito", "Historial de Compras"];
 const settings = ["Perfil", "Logout"];
@@ -28,6 +29,8 @@ function AppBarClient() {
   const [openAlert, setOpenAlert] = useState(false);
   const [usuario, setUsuario] = useState({});
   const navigate = useNavigate();
+
+  const { logout } = useUser();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -95,7 +98,11 @@ function AppBarClient() {
       setAlertSeverity("success");
       setAlertMessage("Cerrando sesión. Redirigiendo...");
       setOpenAlert(true);
-      setTimeout(() => navigate("/"), 2000);
+      
+      setTimeout(() => {
+        navigate("/");
+        logout();
+      }, 2000);
     } catch (error) {
       setAlertSeverity("error");
       setAlertMessage(

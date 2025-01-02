@@ -38,7 +38,6 @@ const verificarRol = (rolesPermitidos) => {
         try {
             const { rol } = req.usuario;
 
-            // verificando si el rol esta permitido
             if (rolesPermitidos.includes(rol)) {
                 next();
             } else {
