@@ -23,10 +23,12 @@ const initialValues = {
   razon_social: "",
   nombre_comercial: "",
   direccion_entrega: "",
+  estado: "",
 };
 
 function ModifyClient() {
   const [clientes, setClientes] = useState([]);
+  const [estados, setEstados] = useState([]);
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState("success");
   const [openAlert, setOpenAlert] = useState(false);
@@ -54,6 +56,7 @@ function ModifyClient() {
       .string()
       .max(100, "La dirección de entrega no debe tener más de 100 caracteres")
       .required("La dirección de entrega es requerida"),
+    estado: yup.number().required("El estado es requerido"),
   });
 
   const {
@@ -69,14 +72,38 @@ function ModifyClient() {
 
   const fetchClientes = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/api/v1/clientes");
+      const response = await axios.get(
+        "http://localhost:3000/api/v1/clientes",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
       setClientes(response.data.data);
     } catch (error) {
       console.error(error);
     }
   };
 
+  const fetchEstados = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/api/v1/estados", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      const estadosCliente = response.data.data.filter(e => e.nombre === "Activo" || e.nombre === "Inactivo");
+      setEstados(estadosCliente);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
+    fetchEstados();
     fetchClientes();
   }, []);
 
@@ -100,6 +127,7 @@ function ModifyClient() {
         razon_social: client.razon_social,
         nombre_comercial: client.nombre_comercial,
         direccion_entrega: client.direccion_entrega,
+        estado: client.Estados_idEstados,
       });
     } catch (error) {
       console.warn(error);
@@ -114,6 +142,7 @@ function ModifyClient() {
         direccion_entrega: data.direccion_entrega,
         telefono: data.telefono,
         correo_electronico: data.email,
+        estado_id: parseInt(data.estado, 10),
       };
 
       const response = await axios.put(
@@ -127,9 +156,10 @@ function ModifyClient() {
       );
 
       if (response.status === 201 || response.status === 200) {
-        setAlertMessage("Cliente actualizado con éxito!");
+        setAlertMessage("Cliente actualizado con éxito");
         setAlertSeverity("success");
         reset(initialValues);
+        fetchClientes();
       }
     } catch (error) {
       setAlertMessage(
@@ -145,12 +175,14 @@ function ModifyClient() {
   };
 
   return (
-    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <Box
+      sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+    >
       <Grid item xs={10} sx={{ height: "100%", width: "100%" }}>
         <Box>
           <Box marginTop={6}>
             <Typography variant="h6" component="h6" gutterBottom align="center">
-              Modificar producto
+              Modificar cliente
             </Typography>
           </Box>
           <Box
@@ -183,7 +215,7 @@ function ModifyClient() {
                           key={cliente.idClientes}
                           value={cliente.idClientes}
                         >
-                          {cliente.razon_social} - {cliente.nombre_comercial}
+                          {cliente.razonSocial} - {cliente.nombreComercial}
                         </MenuItem>
                       ))}
                     </Select>
@@ -219,7 +251,7 @@ function ModifyClient() {
                   </Grid>
 
                   <Grid container spacing={2}>
-                    <Grid item xs={6}>
+                    <Grid item xs={4}>
                       <TextField
                         label="Email"
                         variant="outlined"
@@ -233,7 +265,7 @@ function ModifyClient() {
                       />
                     </Grid>
 
-                    <Grid item xs={6}>
+                    <Grid item xs={4}>
                       <TextField
                         label="Teléfono"
                         variant="outlined"
@@ -246,6 +278,28 @@ function ModifyClient() {
                         helperText={errors.telefono?.message}
                       />
                     </Grid>
+
+                    <Grid item xs={4}>
+                      <FormControl fullWidth margin="normal">
+                        <InputLabel id="estado-label">Estado</InputLabel>
+                        <Select
+                          id="select-estado"
+                          labelId="estado-label"
+                          label="Estado"
+                          {...register("estado")}
+                          value={watch("estado")}
+                        >
+                          {estados.map((estado) => (
+                            <MenuItem
+                              key={estado.idEstados}
+                              value={estado.idEstados}
+                            >
+                              {estado.nombre}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                      </Grid>
                   </Grid>
 
                   <TextField

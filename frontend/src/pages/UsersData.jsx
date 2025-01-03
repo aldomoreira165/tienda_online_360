@@ -3,15 +3,15 @@ import axios from "axios";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
-import TableClients from "./../components/TableClients";
+import TableUsers from "./../components/TableUsers";
 
-export default function ClientsData() {
-  const [clientes, setClientes] = useState([]);
+export default function UsersData() {
+  const [usuarios, setUsuarios] = useState([]);
 
-  const fetchClientes = async () => {
+  const fetchUsuarios = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:3000/api/v1/clientes",
+        "http://localhost:3000/api/v1/usuarios",
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -19,14 +19,14 @@ export default function ClientsData() {
         }
       );
 
-      setClientes(response.data.data);
+      setUsuarios(response.data.data);
     } catch (error) {
       console.error(error);
     }
   };
 
   useEffect(() => {
-    fetchClientes();
+    fetchUsuarios();
   }, []);
 
   return (
@@ -37,12 +37,12 @@ export default function ClientsData() {
         <Box>
           <Box marginTop={6}>
             <Typography variant="h6" component="h6" gutterBottom align="center">
-              Historial de clientes
+              Historial de usuarios
             </Typography>
           </Box>
         </Box>
         <Box>
-          <TableClients clientes={clientes} />
+            <TableUsers usuarios={usuarios} />
         </Box>
       </Grid>
     </Box>

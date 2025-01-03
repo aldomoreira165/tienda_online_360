@@ -7,7 +7,7 @@ const verificarAuth = async(req, res, next) => {
         const tokenData = await verificarToken(token);
         const response = await buscarToken(token);
 
-        // veroificar si el token existe
+        // verificar si el token existe
         if (response.length === 0) {
             return res.status(401).json({
                 estado: "error",

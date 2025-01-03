@@ -8,8 +8,11 @@ import ClientLayout from "./layouts/ClientLayout";
 import OperatorDashboard from "./pages/OperatorDashboard";
 import AddProduct from "./pages/AddProduct";
 import ModifyProduct from "./pages/ModifyProduct";
+import ProductsData from "./pages/ProductsData";
+import CategoriesData from "./pages/CategoriesData";
 import AddCategory from "./pages/AddCategory";
 import ModifyCategory from "./pages/ModifyCategory";
+import UsersData from "./pages/UsersData";
 import AddUser from "./pages/AddUser";
 import ActiveUser from "./pages/ActiveUser";
 import InactiveUser from "./pages/InactiveUser";
@@ -41,10 +44,13 @@ export default function App() {
         <Route element={<ProtectedRoute allowedRoles={[2]} />}>
           <Route path="/operator" element={<OperatorLayout />}>
             <Route index element={<OperatorDashboard />} />
+            <Route path="products" element={<ProductsData />} />
             <Route path="product/add" element={<AddProduct />} />
             <Route path="product/modify" element={<ModifyProduct />} />
+            <Route path="categories" element={<CategoriesData />} />
             <Route path="category/add" element={<AddCategory />} />
             <Route path="category/modify" element={<ModifyCategory />} />
+            <Route path="users" element={<UsersData />} />
             <Route path="user/add" element={<AddUser />} />
             <Route path="user/active" element={<ActiveUser />} />
             <Route path="user/inactive" element={<InactiveUser />} />

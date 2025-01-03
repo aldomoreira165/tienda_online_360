@@ -2,11 +2,6 @@ create database GDA0022OTAldoVasquez;
 
 use GDA0022OTAldoVasquez;
 
-select * from Usuarios;
-truncate table Tokens;
-select * from Tokens;
-select * from CategoriaProductos;
-
 -- creacion de tablas
 create table Productos(
 	idProductos int identity(1, 1), 
@@ -122,6 +117,10 @@ add Usuarios_idUsuarios int not null,
 	constraint FK_Orden_Usuarios foreign key (Usuarios_idUsuarios) references Usuarios(idUsuarios),
 	constraint FK_Orden_Estados foreign key (Estados_idEstados) references Estados(idEstados);
 
+alter table Clientes
+add Estados_idEstados int not null,
+	constraint FK_Clientes_Estados foreign key (Estados_idEstados) references Estados(idEstados);
+
 -- insercion de datos
 insert into Estados (nombre) values ('Activo'), ('Inactivo');
 
@@ -219,6 +218,26 @@ end;
 -- <fin rol>
 
 -- <inicio usuario>
+create or alter proc p_obtenerUsuarios
+as
+begin
+	select 
+		u.idUsuarios,
+		u.correo_electronico,
+		u.nombre_completo,
+		u.telefono,
+		u.fecha_nacimiento,
+		u.fecha_creacion,
+		r.nombre as 'nombre_rol',
+		e.nombre as 'nombre_estado'
+	from 
+	Usuarios u 
+		inner join 
+	Rol r on u.Rol_idRol = r.idRol
+		inner join
+	Estados e on u.Estados_idEstados = e.idEstados
+end;
+
 create or alter proc p_obtenerUsuarioId
 	@idUsuarios int
 as
@@ -353,11 +372,17 @@ begin
 	c.direccion_entrega,
 	c.telefono,
 	c.email,
+	c.Estados_idEstados,
+	e.nombre as 'nombre_estado',
 	u.idUsuarios as 'id_usuario',
 	u.correo_electronico as 'correo_usuario',
 	u.nombre_completo as 'nombre_usuario'
 	from
-		Clientes c left join Usuarios u on c.idClientes = u.Clientes_idClientes;
+		Clientes c 
+			left join 
+		Usuarios u on c.idClientes = u.Clientes_idClientes
+			inner join
+		Estados e on e.idEstados = c.Estados_idEstados;
 end;
 
 create or alter proc p_insertarCliente
@@ -368,9 +393,9 @@ create or alter proc p_insertarCliente
 	@email varchar(45)
 as
 begin
-	insert into Clientes (razon_social, nombre_comercial, direccion_entrega, telefono, email)
+	insert into Clientes (razon_social, nombre_comercial, direccion_entrega, telefono, email, Estados_idEstados)
 		values	
-	(@razon_social, @nombre_comercial, @direccion_entrega, @telefono, @email);
+	(@razon_social, @nombre_comercial, @direccion_entrega, @telefono, @email, 1);
 
 	select * from Clientes where idClientes = scope_identity();
 end;
@@ -381,34 +406,67 @@ create or alter proc p_actualizarCliente
     @nombre_comercial varchar(100),
     @direccion_entrega varchar(45),
     @telefono varchar(45),
-    @correo_electronico varchar(45)
+    @correo_electronico varchar(45),
+    @idEstados int
 as
 begin
-    -- Verificar si el cliente existe
-    if not exists (select 1 from Clientes where idClientes = @idClientes)
-	begin
-		throw 50001, 'El cliente especificado no existe.', 1;
-	end;
+    begin transaction;
 
-	 update Clientes
-	 set 
-		razon_social = @razon_social,
-        nombre_comercial = @nombre_comercial,
-		direccion_entrega = @direccion_entrega,
-        telefono = @telefono,
-		email = @correo_electronico
-	where idClientes = @idClientes;
+    begin try
+        if not exists (select 1 from Clientes where idClientes = @idClientes)
+        begin
+            throw 50001, 'El cliente especificado no existe.', 1;
+        end;
 
-	select * from Clientes where idClientes = @idClientes;
+        update Clientes
+        set 
+            razon_social = @razon_social,
+            nombre_comercial = @nombre_comercial,
+            direccion_entrega = @direccion_entrega,
+            telefono = @telefono,
+            email = @correo_electronico,
+            Estados_idEstados = @idEstados
+        where idClientes = @idClientes;
+
+        if @idEstados = 2
+        begin
+            update Usuarios
+            set Estados_idEstados = 2
+            where Clientes_idClientes = @idClientes;
+        end;
+
+        commit transaction;
+
+        select * from Clientes where idClientes = @idClientes;
+
+    end try
+    begin catch
+        rollback transaction;
+
+        throw;
+    end catch;
 end;
+
+select * from Clientes;
 -- <fin cliente>
 
 -- <inicio categorias>
 create or alter proc p_obtenerCategorias
 as
 begin
-	select * from CategoriaProductos;
+	select 
+		cat.idCategoriaProductos,
+		cat.nombre,
+		cat.fecha_creacion,
+		cat.Usuarios_idUsuarios,
+		cat.Estados_idEstados,
+		e.nombre as 'nombre_estado'
+	from 
+	CategoriaProductos cat inner join Estados e on cat.Estados_idEstados = e.idEstados;
 end;
+
+exec p_obtenerCategorias;
+select * from Tokens;
 
 create or alter proc p_obtenerCategoriaID
 	@idCategoriaProductos int
@@ -518,7 +576,26 @@ end;
 create or alter proc p_obtenerProductos
 as
 begin
-	select * from Productos;
+	select 
+		p.idProductos,
+		p.nombre,
+		p.marca,
+		p.codigo,
+		p.stock,
+		p.precio,
+		p.fecha_creacion,
+		p.foto,
+		p.CategoriaProductos_idCategoriaProductos,
+		p.Usuarios_idUsuarios,
+		p.Estados_idEstados,
+		e.nombre as 'nombre_estado',
+		c.nombre as 'nombre_categoria'
+	from 
+		Productos p 
+			inner join 
+		Estados e on p.Estados_idEstados = e.idEstados
+			inner join
+		CategoriaProductos c on p.CategoriaProductos_idCategoriaProductos = c.idCategoriaProductos
 end;
 
 create or alter proc p_obtenerProductoID
@@ -549,10 +626,6 @@ begin
 	on p.CategoriaProductos_idCategoriaProductos = c.idCategoriaProductos
 	where p.Estados_idEstados = 1;
 end;
-
-EXEC p_obtenerProductosActivos;
-
-select * from CategoriaProductos;
 
 create or alter proc p_reducirStockProducto
 	@idProductos int,

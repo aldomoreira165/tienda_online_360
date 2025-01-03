@@ -73,9 +73,10 @@ export default function FormUser({ rol }) {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-      });
+      }); 
 
-      setClientes(response.data.data);
+      const clientesActivos = response.data.data.filter(c => c.estado === 1);
+      setClientes(clientesActivos);
     } catch (error) {
       console.error(error);
     }
@@ -123,7 +124,12 @@ export default function FormUser({ rol }) {
 
       const response = await axios.post(
         "http://localhost:3000/api/v1/usuarios",
-        dataUser
+        dataUser,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       );
 
       if (response.status === 200 || response.status === 201) {
@@ -138,7 +144,7 @@ export default function FormUser({ rol }) {
       }
     } catch (error) {
       setAlertSeverity("error");
-      setAlertMessage(error.response.data.message);
+      setAlertMessage(error.response.data.mensaje || "Algo salió mal. Inténtalo de nuevo.");
       setOpenAlert(true);
     }
   };

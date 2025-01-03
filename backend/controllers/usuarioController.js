@@ -96,6 +96,22 @@ const actualizarUsuario = async (req, res) => {
   }
 };
 
+const obtenerUsuarios = async (req, res) => {
+  try {
+    const [results, _] = await sequelize.query(`EXEC p_obtenerUsuarios`);
+
+    res.status(200).json({
+      estado: "exito",
+      data: results,
+    });
+  } catch (error) {
+    res.status(400).json({
+      estado: "error",
+      mensaje: error.message,
+    });
+  }
+};
+
 const obtenerUsuarioId = async (req, res) => {
   const { id } = req.params;
 
@@ -202,6 +218,7 @@ const inactivarUsuario = async (req, res) => {
 module.exports = {
   crearUsuario,
   actualizarUsuario,
+  obtenerUsuarios,
   obtenerUsuarioId,
   obtenerUsuarioActivo,
   obtenerUsuarioInactivo,

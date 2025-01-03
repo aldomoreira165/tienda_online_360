@@ -3,6 +3,7 @@ const express = require('express');
 const { 
     crearUsuario,
     actualizarUsuario,
+    obtenerUsuarios,
     obtenerUsuarioId,
     obtenerUsuarioActivo,
     obtenerUsuarioInactivo,
@@ -14,29 +15,32 @@ const { verificarAuth, verificarRol } = require('./../middlewares/verificarAuten
 
 const router = express.Router();
 
+router.use(verificarAuth);
+
 router
     .route('/')
-    .post(crearUsuario)
+    .post(verificarRol([2]), crearUsuario)
+    .get(verificarRol([2]), obtenerUsuarios)
 
     router
     .route('/activos')
-    .get(verificarAuth, verificarRol([2]), obtenerUsuarioActivo)
+    .get(verificarRol([2]), obtenerUsuarioActivo)
 
 router
     .route('/inactivos')
-    .get(verificarAuth, verificarRol([2]), obtenerUsuarioInactivo)
+    .get(verificarRol([2]), obtenerUsuarioInactivo)
 
 router
     .route('/activar/:id')
-    .put(verificarAuth, verificarRol([2]), activarUsuario)
+    .put(verificarRol([2]), activarUsuario)
     
 router
     .route('/inactivar/:id')
-    .put(verificarAuth, verificarRol([2]), inactivarUsuario)
+    .put(verificarRol([2]), inactivarUsuario)
 
 router
     .route('/:id')
-    .get(verificarAuth, verificarRol([1, 2]), obtenerUsuarioId)
-    .put(verificarAuth, verificarRol([1, 2]), actualizarUsuario)
+    .get(verificarRol([1, 2]), obtenerUsuarioId)
+    .put(verificarRol([1, 2]), actualizarUsuario)
     
 module.exports = router;

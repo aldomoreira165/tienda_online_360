@@ -38,6 +38,7 @@ function Row(props) {
         <TableCell>{row.direccionEntrega}</TableCell>
         <TableCell>{row.telefono}</TableCell>
         <TableCell>{row.correoElectronico}</TableCell>
+        <TableCell>{row.nombreEstado}</TableCell>
       </TableRow>
       <TableRow>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
@@ -82,6 +83,7 @@ Row.propTypes = {
     direccionEntrega: PropTypes.string.isRequired,
     telefono: PropTypes.string.isRequired,
     correoElectronico: PropTypes.string.isRequired,
+    nombreEstado: PropTypes.string.isRequired,
     usuarios: PropTypes.arrayOf(
       PropTypes.shape({
         usuarioId: PropTypes.number.isRequired,
@@ -100,6 +102,7 @@ export default function TableClients({ clientes }) {
     direccionEntrega,
     telefono,
     correoElectronico,
+    nombreEstado,
     usuarios
   ) {
     return {
@@ -109,6 +112,7 @@ export default function TableClients({ clientes }) {
       direccionEntrega,
       telefono,
       correoElectronico,
+      nombreEstado,
       usuarios: usuarios.map((usuario) => ({
         usuarioId: usuario.idUsuario,
         usuarioEmail: usuario.correoUsuario,
@@ -125,6 +129,7 @@ export default function TableClients({ clientes }) {
       cliente.direccionEntrega,
       cliente.telefono,
       cliente.correoElectronico,
+      cliente.nombreEstado,
       cliente.usuarios
     )
   );
@@ -141,6 +146,7 @@ export default function TableClients({ clientes }) {
             <TableCell>Dirección entrega</TableCell>
             <TableCell>Teléfono</TableCell>
             <TableCell>Email</TableCell>
+            <TableCell>Estado</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -162,6 +168,7 @@ TableClients.propTypes = {
       direccionEntrega: PropTypes.string.isRequired,
       telefono: PropTypes.string.isRequired,
       correoElectronico: PropTypes.string.isRequired,
+      nombreEstado: PropTypes.string.isRequired,
       usuarios: PropTypes.arrayOf(
         PropTypes.shape({
           idUsuario: PropTypes.number.isRequired,

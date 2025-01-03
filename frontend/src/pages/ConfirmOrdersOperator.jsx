@@ -84,9 +84,7 @@ export default function ConfirmOrdersOperator() {
   };
 
   return (
-    <Box
-      sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
-    >
+    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
       <Grid item xs={10} sx={{ height: "100%", width: "100%" }}>
         <Box>
           <Box marginTop={6}>

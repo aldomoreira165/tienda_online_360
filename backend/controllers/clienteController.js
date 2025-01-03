@@ -43,6 +43,7 @@ const actualizarCliente = async (req, res) => {
     direccion_entrega,
     telefono,
     correo_electronico,
+    estado_id,
   } = req.body;
 
   try {
@@ -53,7 +54,8 @@ const actualizarCliente = async (req, res) => {
             @nombre_comercial = '${nombre_comercial}',
             @direccion_entrega = '${direccion_entrega}',
             @telefono = '${telefono}',
-            @correo_electronico = '${correo_electronico}'`
+            @correo_electronico = '${correo_electronico}',
+            @idEstados = ${parseInt(estado_id, 10)}`
     );
 
     res.status(200).json({
@@ -109,6 +111,8 @@ const obtenerClientes = async (req, res) => {
           direccionEntrega: cliente.direccion_entrega,
           telefono: cliente.telefono,
           correoElectronico: cliente.email,
+          estado: cliente.Estados_idEstados,
+          nombreEstado: cliente.nombre_estado,
           usuarios: usuariosCliente,
         });
       }
