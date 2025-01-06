@@ -10,7 +10,7 @@ const {
     reducirStockProducto
 } = require('../controllers/productoController');
 
-const { verificarAuth } = require('./../middlewares/verificarAutenticacion');
+const { verificarAuth, verificarRol } = require('./../middlewares/verificarAutenticacion');
 
 const router = express.Router();
 
@@ -18,24 +18,24 @@ router.use(verificarAuth);
 
 router
     .route('/')
-    .get(obtenerProductos)
-    .post(crearProducto)
+    .get(verificarRol([2]), obtenerProductos)
+    .post(verificarRol([2]), crearProducto);
 
 router
     .route('/activos')
-    .get(obtenerProductosActivos)
+    .get(verificarRol([1]), obtenerProductosActivos)
 
 router
     .route('/:id')
-    .get(obtenerProductoId)
-    .put(actualizarProducto)
+    .get(verificarRol([2]), obtenerProductoId)
+    .put(verificarRol([2]), actualizarProducto)
 
 router
     .route('/incrementarStock/:id')
-    .put(incrementarStockProducto)
+    .put(verificarRol([1, 2]), incrementarStockProducto)
 
 router
     .route('/reducirStock/:id')
-    .put(reducirStockProducto)
+    .put(verificarRol([1, 2]), reducirStockProducto)
 
 module.exports = router;

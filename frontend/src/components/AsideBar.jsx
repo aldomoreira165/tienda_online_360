@@ -48,6 +48,10 @@ export default function AsideBar() {
     setOpenOrders(!openOrders);
   };
 
+  const handleProductsData = () => {
+    navigate("/operator/products");
+  };
+
   const handleAddProduct = () => {
     navigate("/operator/product/add");
   };
@@ -56,12 +60,20 @@ export default function AsideBar() {
     navigate("/operator/product/modify");
   };
 
+  const handleCategoriesData = () => {
+    navigate("/operator/categories");
+  };
+
   const handleAddCategory = () => {
     navigate("/operator/category/add");
   };
 
   const handleModifyCategory = () => {
     navigate("/operator/category/modify");
+  };
+
+  const handleUsersData = () => {
+    navigate("/operator/users");
   };
 
   const handleAddUser = () => {
@@ -82,6 +94,10 @@ export default function AsideBar() {
 
   const handleModifyClient = () => {
     navigate("/operator/client/modify");
+  };
+
+  const handleClientesData = () => {
+    navigate("/operator/clients");
   };
 
   const handleConfirmOrders = () => {
@@ -124,6 +140,12 @@ export default function AsideBar() {
             </ListItemIcon>
             <ListItemText primary="Modificar" />
           </ListItemButton>
+          <ListItemButton sx={{ pl: 4 }} onClick={handleProductsData}>
+            <ListItemIcon>
+              <HistoryIcon />
+            </ListItemIcon>
+            <ListItemText primary="Historial" />
+          </ListItemButton>
         </List>
       </Collapse>
       <ListItemButton onClick={handleClickCategories}>
@@ -146,6 +168,12 @@ export default function AsideBar() {
               <EditIcon />
             </ListItemIcon>
             <ListItemText primary="Modificar" />
+          </ListItemButton>
+          <ListItemButton sx={{ pl: 4 }} onClick={handleCategoriesData}>
+            <ListItemIcon>
+              <HistoryIcon />
+            </ListItemIcon>
+            <ListItemText primary="Historial" />
           </ListItemButton>
         </List>
       </Collapse>
@@ -176,6 +204,12 @@ export default function AsideBar() {
             </ListItemIcon>
             <ListItemText primary="Desactivar" />
           </ListItemButton>
+          <ListItemButton sx={{ pl: 4 }} onClick={handleUsersData}>
+            <ListItemIcon>
+              <HistoryIcon />
+            </ListItemIcon>
+            <ListItemText primary="Historial" />
+          </ListItemButton>
         </List>
       </Collapse>
 
@@ -200,6 +234,12 @@ export default function AsideBar() {
             </ListItemIcon>
             <ListItemText primary="Modificar" />
           </ListItemButton>
+          <ListItemButton sx={{ pl: 4 }} onClick={handleClientesData}>
+            <ListItemIcon>
+              <HistoryIcon />
+            </ListItemIcon>
+            <ListItemText primary="Historial" />
+          </ListItemButton>
         </List>
       </Collapse>
 
@@ -216,13 +256,13 @@ export default function AsideBar() {
             <ListItemIcon>
               <CheckIcon />
             </ListItemIcon>
-            <ListItemText primary="Confirmar pedidos" />
+            <ListItemText primary="Confirmar" />
           </ListItemButton>
           <ListItemButton sx={{ pl: 4 }} onClick={handleHistoryOrders}>
             <ListItemIcon>
               <HistoryIcon />
             </ListItemIcon>
-            <ListItemText primary="Historial de pedidos" />
+            <ListItemText primary="Historial" />
           </ListItemButton>
         </List>
       </Collapse>

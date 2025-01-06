@@ -117,6 +117,10 @@ add Usuarios_idUsuarios int not null,
 	constraint FK_Orden_Usuarios foreign key (Usuarios_idUsuarios) references Usuarios(idUsuarios),
 	constraint FK_Orden_Estados foreign key (Estados_idEstados) references Estados(idEstados);
 
+alter table Clientes
+add Estados_idEstados int not null,
+	constraint FK_Clientes_Estados foreign key (Estados_idEstados) references Estados(idEstados);
+
 -- insercion de datos
 insert into Estados (nombre) values ('Activo'), ('Inactivo');
 
@@ -214,6 +218,26 @@ end;
 -- <fin rol>
 
 -- <inicio usuario>
+create or alter proc p_obtenerUsuarios
+as
+begin
+	select 
+		u.idUsuarios,
+		u.correo_electronico,
+		u.nombre_completo,
+		u.telefono,
+		u.fecha_nacimiento,
+		u.fecha_creacion,
+		r.nombre as 'nombre_rol',
+		e.nombre as 'nombre_estado'
+	from 
+	Usuarios u 
+		inner join 
+	Rol r on u.Rol_idRol = r.idRol
+		inner join
+	Estados e on u.Estados_idEstados = e.idEstados
+end;
+
 create or alter proc p_obtenerUsuarioId
 	@idUsuarios int
 as
@@ -294,13 +318,8 @@ end;
 
 create or alter proc p_actualizarUsuario
     @idUsuarios int,
-    @estados_idEstados int,
-    @correo_electronico varchar(50),
     @nombre_completo varchar(100),
-    @password varchar(100),
-    @telefono varchar(45),
-    @fecha_nacimiento date,
-	@clientes_idClientes int = null
+    @telefono varchar(45)
 as
 begin
         if not exists (select 1 from Usuarios where idUsuarios = @idUsuarios)
@@ -308,20 +327,10 @@ begin
             throw 50001, 'El usuario especificado no existe.', 1;
         end;
 
-		if not exists (select 1 from Estados where idEstados = @estados_idEstados)
-        begin
-            throw 50002, 'El estado proporcionado no existe.', 1;
-        end;
-
         update Usuarios
         set
-            Estados_idEstados = @estados_idEstados,
-            correo_electronico = @correo_electronico,
             nombre_completo = @nombre_completo,
-            password = @password,
-            telefono = @telefono,
-            fecha_nacimiento = @fecha_nacimiento,
-			Clientes_idClientes = @clientes_idClientes
+            telefono = @telefono
         where idUsuarios = @idUsuarios;
 
 		select * from Usuarios where idUsuarios = @idUsuarios;
@@ -329,8 +338,6 @@ end;
 -- <fin usuario>
 
 -- <inicio cliente>
-select * from Clientes;
-
 create or alter proc p_obtenerClienteID
 	@idClientes int
 as
@@ -338,11 +345,27 @@ begin
 	select * from Clientes where idClientes = @idClientes;
 end;
 	
-
 create or alter proc p_obtenerClientes
 as
 begin
-	select * from Clientes;
+	select 
+	c.idClientes,
+	c.razon_social,
+	c.nombre_comercial,
+	c.direccion_entrega,
+	c.telefono,
+	c.email,
+	c.Estados_idEstados,
+	e.nombre as 'nombre_estado',
+	u.idUsuarios as 'id_usuario',
+	u.correo_electronico as 'correo_usuario',
+	u.nombre_completo as 'nombre_usuario'
+	from
+		Clientes c 
+			left join 
+		Usuarios u on c.idClientes = u.Clientes_idClientes
+			inner join
+		Estados e on e.idEstados = c.Estados_idEstados;
 end;
 
 create or alter proc p_insertarCliente
@@ -353,9 +376,9 @@ create or alter proc p_insertarCliente
 	@email varchar(45)
 as
 begin
-	insert into Clientes (razon_social, nombre_comercial, direccion_entrega, telefono, email)
+	insert into Clientes (razon_social, nombre_comercial, direccion_entrega, telefono, email, Estados_idEstados)
 		values	
-	(@razon_social, @nombre_comercial, @direccion_entrega, @telefono, @email);
+	(@razon_social, @nombre_comercial, @direccion_entrega, @telefono, @email, 1);
 
 	select * from Clientes where idClientes = scope_identity();
 end;
@@ -366,25 +389,45 @@ create or alter proc p_actualizarCliente
     @nombre_comercial varchar(100),
     @direccion_entrega varchar(45),
     @telefono varchar(45),
-    @correo_electronico varchar(45)
+    @correo_electronico varchar(45),
+    @idEstados int
 as
 begin
-    -- Verificar si el cliente existe
-    if not exists (select 1 from Clientes where idClientes = @idClientes)
-	begin
-		throw 50001, 'El cliente especificado no existe.', 1;
-	end;
+    begin transaction;
 
-	 update Clientes
-	 set 
-		razon_social = @razon_social,
-        nombre_comercial = @nombre_comercial,
-		direccion_entrega = @direccion_entrega,
-        telefono = @telefono,
-		email = @correo_electronico
-	where idClientes = @idClientes;
+    begin try
+        if not exists (select 1 from Clientes where idClientes = @idClientes)
+        begin
+            throw 50001, 'El cliente especificado no existe.', 1;
+        end;
 
-	select * from Clientes where idClientes = @idClientes;
+        update Clientes
+        set 
+            razon_social = @razon_social,
+            nombre_comercial = @nombre_comercial,
+            direccion_entrega = @direccion_entrega,
+            telefono = @telefono,
+            email = @correo_electronico,
+            Estados_idEstados = @idEstados
+        where idClientes = @idClientes;
+
+        if @idEstados = 2
+        begin
+            update Usuarios
+            set Estados_idEstados = 2
+            where Clientes_idClientes = @idClientes;
+        end;
+
+        commit transaction;
+
+        select * from Clientes where idClientes = @idClientes;
+
+    end try
+    begin catch
+        rollback transaction;
+
+        throw;
+    end catch;
 end;
 -- <fin cliente>
 
@@ -392,7 +435,15 @@ end;
 create or alter proc p_obtenerCategorias
 as
 begin
-	select * from CategoriaProductos;
+	select 
+		cat.idCategoriaProductos,
+		cat.nombre,
+		cat.fecha_creacion,
+		cat.Usuarios_idUsuarios,
+		cat.Estados_idEstados,
+		e.nombre as 'nombre_estado'
+	from 
+	CategoriaProductos cat inner join Estados e on cat.Estados_idEstados = e.idEstados;
 end;
 
 create or alter proc p_obtenerCategoriaID
@@ -446,42 +497,83 @@ create or alter proc p_actualizarCategoria
     @estados_idEstados int
 as
 begin
-    -- Validando que la categoría existe
-    if not exists (select 1 from CategoriaProductos where idCategoriaProductos = @idCategoriaProductos)
-    begin
-        throw 50001, 'La categoría especificada no existe.', 1;
-    end;
+    begin try
+        begin transaction;
 
-    -- Validando que el nombre no exista en otra categoría
-    if exists (select 1 from CategoriaProductos 
-               where nombre = @nombre and idCategoriaProductos != @idCategoriaProductos)
-    begin
-        throw 50002, 'El nombre de la categoría ya existe.', 1;
-    end;
+        -- Validando que la categoría existe
+        if not exists (select 1 from CategoriaProductos where idCategoriaProductos = @idCategoriaProductos)
+        begin
+            throw 50001, 'La categoría especificada no existe.', 1;
+        end;
 
-    -- Validando que el estado exista
-    if not exists (select 1 from Estados where idEstados = @estados_idEstados)
-    begin
-        throw 50003, 'El estado especificado no existe.', 1;
-    end;
+        -- Validando que el nombre no exista en otra categoría
+        if exists (select 1 from CategoriaProductos 
+                   where nombre = @nombre and idCategoriaProductos != @idCategoriaProductos)
+        begin
+            throw 50002, 'El nombre de la categoría ya existe.', 1;
+        end;
 
-    update CategoriaProductos
-    set 
-        nombre = @nombre,
-        Estados_idEstados = @estados_idEstados
-    where 
-        idCategoriaProductos = @idCategoriaProductos;
+        -- Validando que el estado exista
+        if not exists (select 1 from Estados where idEstados = @estados_idEstados)
+        begin
+            throw 50003, 'El estado especificado no existe.', 1;
+        end;
 
-    select * from CategoriaProductos where idCategoriaProductos = @idCategoriaProductos;
+        update CategoriaProductos
+        set 
+            nombre = @nombre,
+            Estados_idEstados = @estados_idEstados
+        where 
+            idCategoriaProductos = @idCategoriaProductos;
+
+        declare @estadoInactivo int = 2;
+        
+        if @estados_idEstados = @estadoInactivo
+        begin
+            update Productos
+            set 
+                Estados_idEstados = @estadoInactivo
+            where 
+                CategoriaProductos_idCategoriaProductos = @idCategoriaProductos;
+        end;
+
+        commit transaction;
+
+        select * from CategoriaProductos where idCategoriaProductos = @idCategoriaProductos;
+    end try
+    begin catch
+        if @@TRANCOUNT > 0
+            rollback transaction;
+
+        throw;
+    end catch
 end;
-
 -- <fin categorias>
 
 -- <inicio productos>
 create or alter proc p_obtenerProductos
 as
 begin
-	select * from Productos;
+	select 
+		p.idProductos,
+		p.nombre,
+		p.marca,
+		p.codigo,
+		p.stock,
+		p.precio,
+		p.fecha_creacion,
+		p.foto,
+		p.CategoriaProductos_idCategoriaProductos,
+		p.Usuarios_idUsuarios,
+		p.Estados_idEstados,
+		e.nombre as 'nombre_estado',
+		c.nombre as 'nombre_categoria'
+	from 
+		Productos p 
+			inner join 
+		Estados e on p.Estados_idEstados = e.idEstados
+			inner join
+		CategoriaProductos c on p.CategoriaProductos_idCategoriaProductos = c.idCategoriaProductos
 end;
 
 create or alter proc p_obtenerProductoID
@@ -499,7 +591,18 @@ end;
 create or alter proc p_obtenerProductosActivos
 as
 begin
-	select * from Productos where Estados_idEstados = 1;
+	select 
+		p.idProductos,
+		p.nombre,
+		p.marca,
+		p.foto,
+		p.stock,
+		p.precio,
+		c.nombre as 'nombre_categoria' 
+	from 
+	Productos p inner join CategoriaProductos c
+	on p.CategoriaProductos_idCategoriaProductos = c.idCategoriaProductos
+	where p.Estados_idEstados = 1;
 end;
 
 create or alter proc p_reducirStockProducto
@@ -804,8 +907,6 @@ begin
 		o.fecha_creacion desc;
 end;
 
-select * from Estados;
-
 create or alter proc p_obtenerOrdenesConfirmadas
 as
 begin
@@ -862,8 +963,6 @@ begin
 	order by 
 		o.fecha_creacion desc;
 end;
-
-select * from Estados;
 
 create or alter proc p_entregarOrden
 	@idOrden int
@@ -927,9 +1026,6 @@ begin
 
 	select * from Orden where idOrden = @idOrden;
 end;
-
-select * from Orden;
-
 -- <fin orden>
 
 -- <inicio tokens>
