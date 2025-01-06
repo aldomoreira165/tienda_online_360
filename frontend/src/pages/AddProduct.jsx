@@ -85,7 +85,8 @@ export default function AddProduct() {
           },
         }
       );
-      setCategorias(response.data.data);
+      const categoriasActivas = response.data.data.filter(cat => cat.Estados_idEstados === 1);
+      setCategorias(categoriasActivas);
     } catch (error) {
       console.warn(error);
     }
@@ -116,8 +117,6 @@ export default function AddProduct() {
 
   const onSubmit = async (data) => {
     try {
-      const idUsuario = localStorage.getItem("idUsuario");
-
       let dataProduct = {
         nombre: data.nombre,
         marca: data.marca,
@@ -127,7 +126,6 @@ export default function AddProduct() {
         estados_id: parseInt(data.estado, 10),
         precio: parseFloat(data.precio, 10),
         foto: data.foto,
-        usuario_id: parseInt(idUsuario, 10),
         fecha_creacion: new Date().toISOString(),
       };
 

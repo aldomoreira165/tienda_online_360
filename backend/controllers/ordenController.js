@@ -2,9 +2,7 @@ const sequelize = require('../config/db');
 
 const crearOrdenConDetalle = async (req, res) => {
     const { 
-        Usuarios_idUsuarios, 
         Estados_idEstados, 
-        fechaCreacion, 
         nombre_completo, 
         direccion, 
         telefono, 
@@ -14,12 +12,14 @@ const crearOrdenConDetalle = async (req, res) => {
         detalles 
     } = req.body;
 
+    const { id } = req.usuario;
+
     try {
         const detallesJSON = JSON.stringify(detalles);
 
         const [results, _] = await sequelize.query(
             `EXEC p_insertarOrdenConDetalle 
-            @Usuarios_idUsuarios = ${parseInt(Usuarios_idUsuarios, 10)},
+            @Usuarios_idUsuarios = ${parseInt(id, 10)},
             @Estados_idEstados = ${parseInt(Estados_idEstados, 10)},
             @nombre_completo = '${nombre_completo}',
             @direccion = '${direccion}',

@@ -137,6 +137,7 @@ export default function ModifyCategory() {
         setAlertMessage("Categoría modificada correctamente");
         setOpenAlert(true);
         reset(initialValues);
+        fetchCategorias();
       }
     } catch (error) {
       setAlertSeverity("error");

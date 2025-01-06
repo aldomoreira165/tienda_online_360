@@ -37,7 +37,6 @@ export default function AddCategory() {
   const onSubmit = async (data) => {
     try {
       const dataCategory = {
-        usuario_id: localStorage.getItem("idUsuario"),
         nombre: data.name,
         estado_id: 1,
         fecha_creacion: new Date().toISOString(),

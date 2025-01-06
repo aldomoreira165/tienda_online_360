@@ -3,45 +3,44 @@ const express = require('express');
 const { 
     crearUsuario,
     actualizarUsuario,
+    obtenerUsuarios,
     obtenerUsuarioId,
-    obtenerUsuarioEmail,
     obtenerUsuarioActivo,
     obtenerUsuarioInactivo,
     activarUsuario,
     inactivarUsuario
 } = require('./../controllers/usuarioController');
 
-const { verificarAuth } = require('./../middlewares/verificarAutenticacion');
+const { verificarAuth, verificarRol } = require('./../middlewares/verificarAutenticacion');
 
 const router = express.Router();
 
+router.use(verificarAuth);
+
 router
     .route('/')
-    .post(crearUsuario)
+    .post(verificarRol([2]), crearUsuario)
+    .get(verificarRol([2]), obtenerUsuarios)
 
     router
     .route('/activos')
-    .get(verificarAuth, obtenerUsuarioActivo)
+    .get(verificarRol([2]), obtenerUsuarioActivo)
 
 router
     .route('/inactivos')
-    .get(verificarAuth, obtenerUsuarioInactivo)
+    .get(verificarRol([2]), obtenerUsuarioInactivo)
 
 router
     .route('/activar/:id')
-    .put(verificarAuth, activarUsuario)
+    .put(verificarRol([2]), activarUsuario)
     
 router
     .route('/inactivar/:id')
-    .put(verificarAuth, inactivarUsuario)
-
-router
-    .route('/email/:email')
-    .get(verificarAuth, obtenerUsuarioEmail)
+    .put(verificarRol([2]), inactivarUsuario)
 
 router
     .route('/:id')
-    .get(verificarAuth, obtenerUsuarioId)
-    .put(verificarAuth, actualizarUsuario)
+    .get(verificarRol([1, 2]), obtenerUsuarioId)
+    .put(verificarRol([1, 2]), actualizarUsuario)
     
 module.exports = router;

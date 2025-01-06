@@ -46,8 +46,6 @@ export default function ConfirmOrdersOperator() {
   };
 
   const handleReject = async (idOrden) => {
-    console.log("Rechazando orden", idOrden);
-    console.log(ordenes);
     try {
       await axios.put(
         `http://localhost:3000/api/v1/ordenes/rechazar/${idOrden}`,
@@ -86,9 +84,7 @@ export default function ConfirmOrdersOperator() {
   };
 
   return (
-    <Box
-      sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
-    >
+    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
       <Grid item xs={10} sx={{ height: "100%", width: "100%" }}>
         <Box>
           <Box marginTop={6}>

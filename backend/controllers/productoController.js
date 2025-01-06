@@ -55,7 +55,6 @@ const obtenerProductosActivos = async (req, res) => {
 const crearProducto = async (req, res) => {
   const {
     categoria_id,
-    usuario_id,
     nombre,
     marca,
     codigo,
@@ -66,11 +65,13 @@ const crearProducto = async (req, res) => {
     foto,
   } = req.body;
 
+  const { id } = req.usuario;
+
   try {
     const [results, _] = await sequelize.query(
       `EXEC p_insertarProductos 
       @categoriaProductos_idCategoriaProductos = ${parseInt(categoria_id, 10)}, 
-      @usuarios_idUsuarios = ${parseInt(usuario_id, 10)}, 
+      @usuarios_idUsuarios = ${parseInt(id, 10)}, 
       @nombre = '${nombre}', 
       @marca = '${marca}', 
       @codigo = '${codigo}', 

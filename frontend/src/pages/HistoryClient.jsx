@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 import Box from "@mui/material/Box";
 import Typografy from "@mui/material/Typography";
 import AlertMessage from "./../components/AlertMessage";
@@ -13,7 +14,9 @@ export default function HistoryClient() {
 
   const fetchOrdenes = async () => {
     try {
-      const idUsuario = localStorage.getItem("idUsuario");
+      const token = localStorage.getItem("token");
+      const decodedToken = jwtDecode(token);
+      const idUsuario = decodedToken.id;
 
       const response = await axios.get(
         `http://localhost:3000/api/v1/ordenes/usuario/${idUsuario}`,
@@ -25,7 +28,6 @@ export default function HistoryClient() {
       );
 
       setOrdenes(response.data.data);
-      console.log(response.data.data);
     } catch (error) {
       console.error(error);
       setAlertSeverity("error");

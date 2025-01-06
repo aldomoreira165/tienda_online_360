@@ -7,15 +7,16 @@ const {
     actualizarCategoria 
 } = require('./../controllers/categoriaController');
 
-const { verificarAuth } = require('./../middlewares/verificarAutenticacion');
+const { verificarAuth, verificarRol } = require('./../middlewares/verificarAutenticacion');
 
 const router = express.Router();
 
 router.use(verificarAuth);
+router.use(verificarRol([2]));
 
 router
     .route('/')
-    .get(obtenerCategorias) 
+    .get(obtenerCategorias)
     .post(crearCategoria)
     
 router

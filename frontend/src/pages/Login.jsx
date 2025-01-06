@@ -18,11 +18,13 @@ import slide3 from "./../assets/images/slide3.jpg";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import "./../assets/css/main.css";
+import useUser from "../hooks/useUser";
 
 export default function Login() {
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState("success");
   const [openAlert, setOpenAlert] = useState(false);
+  const { login } = useUser();
 
   // esquema de validación de formulario
   const schema = yup.object().shape({
@@ -57,8 +59,14 @@ export default function Login() {
         }
       );
 
-      const { id, rol, estado, correo } = response.data.data;
+      const usuario = response.data.data;
+      const { rol, estado } = usuario;
       const token = response.data.token;
+
+      // creando contexto de usuario
+      const usuarioContext = {
+        rol: usuario.rol,
+      }
 
       // seteando alerta
       setAlertSeverity("success");
@@ -68,15 +76,11 @@ export default function Login() {
       if (rol === 1 && estado === 1) {
         setTimeout(() => navigate("/client"), 2000);
         localStorage.setItem("token", token);
-        localStorage.setItem("idUsuario", id);
-        localStorage.setItem("rolUsuario", rol);
-        localStorage.setItem("emailUsuario", correo);
+        login(usuarioContext);
       } else if (rol === 2 && estado === 1) {
         setTimeout(() => navigate("/operator"), 2000);
         localStorage.setItem("token", token);
-        localStorage.setItem("idUsuario", id);
-        localStorage.setItem("rolUsuario", rol);
-        localStorage.setItem("emailUsuario", correo);
+        login(usuarioContext);
       } else {
         setAlertSeverity("warning");
         setAlertMessage("El usuario no tiene permisos para acceder.");
@@ -90,10 +94,6 @@ export default function Login() {
       );
       setOpenAlert(true);
     }
-  };
-
-  const handleSignUpClick = () => {
-    navigate("/signup");
   };
 
   const handleCloseAlert = () => {
@@ -173,7 +173,7 @@ export default function Login() {
 
                 <Button
                   variant="contained"
-                  color="success"
+                  color="info"
                   fullWidth
                   sx={{ marginTop: 2 }}
                   type="submit"
@@ -181,16 +181,6 @@ export default function Login() {
                   Iniciar Sesión
                 </Button>
               </form>
-
-              <Button
-                variant="contained"
-                color="primary"
-                fullWidth
-                onClick={handleSignUpClick}
-                sx={{ marginTop: 2 }}
-              >
-                Registrarse
-              </Button>
             </Paper>
           </Box>
         </Grid>

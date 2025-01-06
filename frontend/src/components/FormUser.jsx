@@ -69,16 +69,37 @@ export default function FormUser({ rol }) {
 
   const fetchClientes = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/api/v1/clientes");
-      setClientes(response.data.data);
+      const response = await axios.get("http://localhost:3000/api/v1/clientes", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }); 
+
+      const clientesActivos = response.data.data.filter(c => c.estado === 1);
+      setClientes(clientesActivos);
     } catch (error) {
       console.error(error);
     }
   };
-
+  
   useEffect(() => {
     fetchClientes();
   }, []);
+
+  const validateAge = (birthdate) => {
+    const today = new Date();
+    const birthDate = new Date(birthdate);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDifference = today.getMonth() - birthDate.getMonth();
+
+    if (
+      monthDifference < 0 ||
+      (monthDifference === 0 && today.getDate() < birthDate.getDate())
+    ) {
+      age--;
+    }
+    return age;
+  };
 
   const onSubmit = async (data) => {
     try {
@@ -93,9 +114,22 @@ export default function FormUser({ rol }) {
         cliente_id: data.cliente,
       };
 
+      // verificar si el usuario es mayor de 18 años
+      if (validateAge(data.fecha_nacimiento) < 18) {
+        setAlertSeverity("error");
+        setAlertMessage("El usuario debe ser mayor de 18 años.");
+        setOpenAlert(true);
+        return;
+      }
+
       const response = await axios.post(
         "http://localhost:3000/api/v1/usuarios",
-        dataUser
+        dataUser,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       );
 
       if (response.status === 200 || response.status === 201) {
@@ -110,7 +144,7 @@ export default function FormUser({ rol }) {
       }
     } catch (error) {
       setAlertSeverity("error");
-      setAlertMessage(error.response.data.message);
+      setAlertMessage(error.response.data.mensaje || "Algo salió mal. Inténtalo de nuevo.");
       setOpenAlert(true);
     }
   };
@@ -129,17 +163,12 @@ export default function FormUser({ rol }) {
           padding: "2rem",
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",       
+          justifyContent: "center",
         }}
       >
         <Box sx={{ width: "100%", height: "100%" }}>
-          <Paper
-            elevation={8}
-            sx={{ height: "100%", width: "100%"}}
-          >
-            <Box
-              padding={3}
-            >
+          <Paper elevation={8} sx={{ height: "100%", width: "100%" }}>
+            <Box padding={3}>
               <form onSubmit={handleSubmit(onSubmit)}>
                 <Grid container spacing={2}>
                   <Grid item xs={6}>
@@ -206,6 +235,10 @@ export default function FormUser({ rol }) {
                       variant="outlined"
                       margin="normal"
                       type="date"
+                      label= "Fecha de nacimiento"
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
                       fullWidth
                       {...register("fecha_nacimiento")}
                       value={watch("fecha_nacimiento")}
@@ -228,7 +261,7 @@ export default function FormUser({ rol }) {
                           labelId="cliente-label"
                           label="Cliente"
                           fullWidth
-                          disabled = {rol === 2 }
+                          disabled={rol === 2}
                           value={watch("cliente")}
                           {...register("cliente")}
                           error={!!errors.cliente}
@@ -238,7 +271,7 @@ export default function FormUser({ rol }) {
                               key={cliente.idClientes}
                               value={cliente.idClientes}
                             >
-                              {`${cliente.nombre_comercial} - ${cliente.razon_social}`}
+                              {`${cliente.nombreComercial} - ${cliente.razonSocial}`}
                             </MenuItem>
                           ))}
                         </Select>

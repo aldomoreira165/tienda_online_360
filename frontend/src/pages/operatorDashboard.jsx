@@ -3,7 +3,7 @@ import axios from "axios";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import TableHistoryOperator from "./../components/TableHistoryOperator";
+import TableHistoryOperator from "../components/TableHistoryOperator";
 
 export default function OperatorDashboard() {
   const [ordenes, setOrdenes] = useState([]);

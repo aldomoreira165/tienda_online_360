@@ -14,7 +14,6 @@ export default function AddUser() {
   const handleChangeRol = (event) => {
     const rol = parseInt(event.target.value);
     setRol(rol);
-    console.log(event.target.value);
   };
 
   return (

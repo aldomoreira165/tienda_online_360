@@ -43,6 +43,7 @@ const actualizarCliente = async (req, res) => {
     direccion_entrega,
     telefono,
     correo_electronico,
+    estado_id,
   } = req.body;
 
   try {
@@ -53,7 +54,8 @@ const actualizarCliente = async (req, res) => {
             @nombre_comercial = '${nombre_comercial}',
             @direccion_entrega = '${direccion_entrega}',
             @telefono = '${telefono}',
-            @correo_electronico = '${correo_electronico}'`
+            @correo_electronico = '${correo_electronico}',
+            @idEstados = ${parseInt(estado_id, 10)}`
     );
 
     res.status(200).json({
@@ -79,9 +81,46 @@ const obtenerClientes = async (req, res) => {
   try {
     const [results, _] = await sequelize.query(`EXEC p_obtenerClientes`);
 
+    const clientes = [];
+
+    results.forEach((cliente) => {
+      const clienteExistente = clientes.find(c => c.idClientes === cliente.idClientes);
+      if (clienteExistente) {
+        clienteExistente.usuarios.push({
+          idUsuario: cliente.id_usuario,
+          nombreUsuario: cliente.nombre_usuario,
+          correoUsuario: cliente.correo_usuario,
+        })
+      } else {
+        let usuariosCliente = [];
+
+        if (cliente.id_usuario !== null) {
+          usuariosCliente = [
+            {
+              idUsuario: cliente.id_usuario,
+              nombreUsuario: cliente.nombre_usuario,
+              correoUsuario: cliente.correo_usuario,
+            }
+          ]
+        }
+
+        clientes.push({
+          idClientes: cliente.idClientes,
+          razonSocial: cliente.razon_social,
+          nombreComercial: cliente.nombre_comercial,
+          direccionEntrega: cliente.direccion_entrega,
+          telefono: cliente.telefono,
+          correoElectronico: cliente.email,
+          estado: cliente.Estados_idEstados,
+          nombreEstado: cliente.nombre_estado,
+          usuarios: usuariosCliente,
+        });
+      }
+    });
+    
     res.status(200).json({
       estado: "exito",
-      data: results,
+      data: clientes,
     });
   } catch (error) {
     res.status(400).json({
