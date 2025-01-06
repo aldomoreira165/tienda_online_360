@@ -3,16 +3,18 @@ import { Outlet, Navigate } from "react-router-dom";
 import useUser from "./../hooks/useUser";
 
 export function ProtectedRoute({allowedRoles}) {
-    const { user } = useUser();
+    const { user, loading } = useUser();
+
+    if (loading) {
+        return <div>Cargando...</div>;
+      }
     
     if (!user) {
-        console.log("No hay usuario");
         return <Navigate to="/" replace/>;
     }
 
     if (!allowedRoles.includes(user.rol)) {
-        console.log("No tiene permisos");
-        return <Navigate to="/access-denied" replace/>;
+        return <Navigate to="/access-denied"/>;
     }
 
     return <Outlet />;

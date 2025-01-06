@@ -5,12 +5,14 @@ export const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
+    setLoading(false);
   }, []);
 
   const login = (userData) => {
@@ -29,6 +31,7 @@ export const UserProvider = ({ children }) => {
         user,
         login,
         logout,
+        loading,
       }}
     >
       {children}

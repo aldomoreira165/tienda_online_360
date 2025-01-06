@@ -41,8 +41,6 @@ const login = async (req, res) => {
         // agregando usuario al request
         req.usuario = usuarioToken;
 
-        console.log("request usuario", req.usuario);
-           
         await insertarToken(token);
 
         res.status(200).json({

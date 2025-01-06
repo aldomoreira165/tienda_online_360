@@ -14,6 +14,8 @@ import AddCategory from "./pages/AddCategory";
 import ModifyCategory from "./pages/ModifyCategory";
 import UsersData from "./pages/UsersData";
 import AddUser from "./pages/AddUser";
+import ModifyProfileClient from "./pages/ModifyProfileClient";
+import ModifyProfileOperator from "./pages/ModifyProfileOperator";
 import ActiveUser from "./pages/ActiveUser";
 import InactiveUser from "./pages/InactiveUser";
 import ClientsData from "./pages/ClientsData";
@@ -24,6 +26,7 @@ import ConfirmCart from "./pages/ConfirmCart";
 import HistoryClient from "./pages/HistoryClient";
 import ConfirmOrdersOperator from "./pages/ConfirmOrdersOperator";
 import AccessDenied from "./pages/AccessDenied";
+import NotFound from "./pages/NotFound";
 
 export default function App() {
   return (
@@ -38,6 +41,7 @@ export default function App() {
             <Route path="cart" element={<Cart />} />
             <Route path="cart/confirm" element={<ConfirmCart />} />
             <Route path="history" element={<HistoryClient />} />
+            <Route path="profile" element={<ModifyProfileClient />} />
           </Route>
         </Route>
 
@@ -58,10 +62,12 @@ export default function App() {
             <Route path="client/add" element={<AddClient />} />
             <Route path="client/modify" element={<ModifyClient />} />
             <Route path="order/confirm" element={<ConfirmOrdersOperator />} />
+            <Route path="profile" element={<ModifyProfileOperator />} />
           </Route>
         </Route>
 
         <Route path="/access-denied" element={<AccessDenied />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

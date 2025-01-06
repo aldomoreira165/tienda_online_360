@@ -112,6 +112,10 @@ function AppBarClient() {
     }
   };
 
+  const handleProfile = () => {
+    navigate("/client/profile");
+  }
+
   return (
     <AppBar position="fixed">
       <Container maxWidth="xl">
@@ -205,7 +209,7 @@ function AppBarClient() {
                 <MenuItem
                   key={setting}
                   onClick={
-                    setting === "Logout" ? handleLogout : handleCloseUserMenu
+                    setting === "Logout" ? handleLogout : handleProfile
                   }
                 >
                   <Typography sx={{ textAlign: "center" }}>

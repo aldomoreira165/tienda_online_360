@@ -235,6 +235,10 @@ export default function FormUser({ rol }) {
                       variant="outlined"
                       margin="normal"
                       type="date"
+                      label= "Fecha de nacimiento"
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
                       fullWidth
                       {...register("fecha_nacimiento")}
                       value={watch("fecha_nacimiento")}

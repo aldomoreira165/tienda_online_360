@@ -210,6 +210,10 @@ export default function FormCart() {
                       margin="normal"
                       type="date"
                       fullWidth
+                      label="Fecha de entrega"
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
                       {...register("fecha_entrega")}
                       value={watch("fecha_entrega")}
                       error={!!errors.fecha_entrega}

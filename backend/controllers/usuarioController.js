@@ -51,27 +51,18 @@ const crearUsuario = async (req, res) => {
 
 const actualizarUsuario = async (req, res) => {
   const { id } = req.params;
+
   const {
-    estados_idEstados,
-    correo_electronico,
     nombre_completo,
-    password,
     telefono,
-    fecha_nacimiento,
   } = req.body;
 
   try {
-    const hashedPassword = await encriptarContraseña(password);
-    console.log("hashedPassword", hashedPassword);
     const [results, _] = await sequelize.query(
       `EXEC p_actualizarUsuario 
             @idUsuarios = ${parseInt(id, 10)},
-            @estados_idEstados = ${parseInt(estados_idEstados, 10)},
-            @correo_electronico = '${correo_electronico}',
             @nombre_completo = '${nombre_completo}',
-            @password = '${hashedPassword}',
-            @telefono = '${telefono}',
-            @fecha_nacimiento = '${fecha_nacimiento}'`
+            @telefono = '${telefono}'`
     );
 
     res.status(200).json({

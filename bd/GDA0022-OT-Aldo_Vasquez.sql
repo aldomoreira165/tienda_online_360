@@ -318,13 +318,8 @@ end;
 
 create or alter proc p_actualizarUsuario
     @idUsuarios int,
-    @estados_idEstados int,
-    @correo_electronico varchar(50),
     @nombre_completo varchar(100),
-    @password varchar(100),
-    @telefono varchar(45),
-    @fecha_nacimiento date,
-	@clientes_idClientes int = null
+    @telefono varchar(45)
 as
 begin
         if not exists (select 1 from Usuarios where idUsuarios = @idUsuarios)
@@ -332,20 +327,10 @@ begin
             throw 50001, 'El usuario especificado no existe.', 1;
         end;
 
-		if not exists (select 1 from Estados where idEstados = @estados_idEstados)
-        begin
-            throw 50002, 'El estado proporcionado no existe.', 1;
-        end;
-
         update Usuarios
         set
-            Estados_idEstados = @estados_idEstados,
-            correo_electronico = @correo_electronico,
             nombre_completo = @nombre_completo,
-            password = @password,
-            telefono = @telefono,
-            fecha_nacimiento = @fecha_nacimiento,
-			Clientes_idClientes = @clientes_idClientes
+            telefono = @telefono
         where idUsuarios = @idUsuarios;
 
 		select * from Usuarios where idUsuarios = @idUsuarios;
@@ -359,8 +344,6 @@ as
 begin
 	select * from Clientes where idClientes = @idClientes;
 end;
-
-select * from Usuarios;
 	
 create or alter proc p_obtenerClientes
 as
@@ -446,8 +429,6 @@ begin
         throw;
     end catch;
 end;
-
-select * from Clientes;
 -- <fin cliente>
 
 -- <inicio categorias>
@@ -464,9 +445,6 @@ begin
 	from 
 	CategoriaProductos cat inner join Estados e on cat.Estados_idEstados = e.idEstados;
 end;
-
-exec p_obtenerCategorias;
-select * from Tokens;
 
 create or alter proc p_obtenerCategoriaID
 	@idCategoriaProductos int
@@ -929,8 +907,6 @@ begin
 		o.fecha_creacion desc;
 end;
 
-select * from Estados;
-
 create or alter proc p_obtenerOrdenesConfirmadas
 as
 begin
@@ -987,8 +963,6 @@ begin
 	order by 
 		o.fecha_creacion desc;
 end;
-
-select * from Estados;
 
 create or alter proc p_entregarOrden
 	@idOrden int
@@ -1052,9 +1026,6 @@ begin
 
 	select * from Orden where idOrden = @idOrden;
 end;
-
-select * from Orden;
-
 -- <fin orden>
 
 -- <inicio tokens>

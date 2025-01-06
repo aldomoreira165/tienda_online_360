@@ -95,6 +95,10 @@ function AppBarOperator() {
     navigate("/operator");
   };
 
+  const handleProfile = () => {
+    navigate("/operator/profile");
+  }
+
   return (
     <AppBar position="fixed">
       <Container maxWidth="xl">
@@ -154,7 +158,7 @@ function AppBarOperator() {
                       onClick={
                         setting === "Logout"
                           ? handleLogout
-                          : handleCloseUserMenu
+                          : handleProfile
                       }
                     >
                       <Typography sx={{ textAlign: "center" }}>
